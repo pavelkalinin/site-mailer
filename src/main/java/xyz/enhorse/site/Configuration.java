@@ -195,14 +195,16 @@ public class Configuration {
 
 
     private static void checkSMTPPort(Properties properties) {
-        int port;
+        int port = DEFAULT_SMTP_PORT;
 
-        if (!properties.containsKey(SMTP_PORT) && (Boolean.valueOf(properties.getProperty(SMTP_SSL_ENABLE)))) {
-            port = (Boolean.valueOf(properties.getProperty(SMTP_STARTTLS_ENABLE)))
-                    ? DEFAULT_STARTTLS_SMTP_PORT
-                    : DEFAULT_SECURE_SMTP_PORT;
-        } else {
+        if (properties.containsKey(SMTP_PORT)) {
             port = Integer.parseInt(properties.getProperty(SMTP_PORT));
+        } else {
+            if (Boolean.valueOf(properties.getProperty(SMTP_SSL_ENABLE))) {
+                port = (Boolean.valueOf(properties.getProperty(SMTP_STARTTLS_ENABLE)))
+                        ? DEFAULT_STARTTLS_SMTP_PORT
+                        : DEFAULT_SECURE_SMTP_PORT;
+            }
         }
 
         properties.put(SMTP_PORT, port);
