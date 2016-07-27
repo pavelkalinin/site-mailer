@@ -17,6 +17,7 @@ public class Mailer {
         }
 
         Configuration configuration = Configuration.loadFromFile(args[0]);
+        System.out.println(configuration);
 
         Controller controller = new Controller(configuration);
 
