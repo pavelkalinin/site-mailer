@@ -16,4 +16,6 @@
 
 # Private
 access.properties
-# Demo.java
+
+# System
+*.DS_Store
