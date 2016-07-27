@@ -22,20 +22,25 @@ public class Configuration {
 
     private final static String SMTP_SERVER = "smtp.server";
     private final static String SMTP_PORT = "smtp.port";
-    private final static String SMTP_AUTH_REQUIRE = "smtp.auth.require";
-    private final static String SMTP_SSL_ENABLE = "smtp.ssl.enable";
-    private final static String SMTP_STARTTLS_ENABLE = "smtp.starttls.enable";
+    private final static String SMTP_AUTH = "smtp.auth.require";
+    private final static String SMTP_SSL = "smtp.ssl.enable";
+    private final static String SMTP_STARTTLS = "smtp.starttls.enable";
     private final static String SMTP_USERNAME = "smtp.username";
     private final static String SMTP_PASSWORD = "smtp.password";
+    private final static String SMTP_PROTOCOL = "smtp.transport.protocol";
 
-    private final static boolean DEFAULT_SMTP_AUTH_REQUIRE = true;
-    private final static boolean DEFAULT_SMTP_SSL_ENABLE = false;
-    private final static boolean DEFAULT_SMTP_STARTTLS_ENABLE = false;
+    private final static boolean DEFAULT_SMTP_AUTH = true;
+    private final static boolean DEFAULT_SMTP_SSL = false;
+    private final static boolean DEFAULT_SMTP_STARTTLS = false;
     private final static String DEFAULT_SMTP_USERNAME = "";
     private final static String DEFAULT_SMTP_PASSWORD = "";
-    private final static int DEFAULT_SMTP_PORT = 25;
-    private final static int DEFAULT_SECURE_SMTP_PORT = 465;
-    private final static int DEFAULT_STARTTLS_SMTP_PORT = 587;
+
+    private final static int BASIC_SMTP_PORT = 25;
+    private final static int SECURE_SMTP_PORT = 465;
+    private final static int STARTTLS_SMTP_PORT = 587;
+
+    private final static String BASIC_SMTP_PROTOCOL = "smtp";
+    private final static String SECURE_SMTP_PROTOCOL = "smtps";
 
 
     private final Properties PARAMETERS;
@@ -56,8 +61,8 @@ public class Configuration {
     }
 
 
-    public Email recipient() {
-        return Email.parse(PARAMETERS.getProperty(MAIL_RECIPIENT));
+    public String recipient() {
+        return PARAMETERS.getProperty(MAIL_RECIPIENT);
     }
 
 
@@ -67,22 +72,22 @@ public class Configuration {
 
 
     public int smtpPort() {
-        return Integer.parseInt(PARAMETERS.getProperty(SMTP_PORT));
+        return (int) PARAMETERS.get(SMTP_PORT);
     }
 
 
     public boolean smtpAuthorizationRequire() {
-        return Boolean.valueOf(PARAMETERS.getProperty(SMTP_AUTH_REQUIRE));
+        return Boolean.valueOf(PARAMETERS.getProperty(SMTP_AUTH));
     }
 
 
     public boolean smtpSSLEnabled() {
-        return Boolean.valueOf(PARAMETERS.getProperty(SMTP_SSL_ENABLE));
+        return Boolean.valueOf(PARAMETERS.getProperty(SMTP_SSL));
     }
 
 
     public boolean smtpSTARTSSLEnable() {
-        return Boolean.valueOf(PARAMETERS.getProperty(SMTP_STARTTLS_ENABLE));
+        return Boolean.valueOf(PARAMETERS.getProperty(SMTP_STARTTLS));
     }
 
 
@@ -93,6 +98,11 @@ public class Configuration {
 
     public String smtpPassword() {
         return PARAMETERS.getProperty(SMTP_PASSWORD);
+    }
+
+
+    public String smtpTransportProtocol() {
+        return PARAMETERS.getProperty(SMTP_PROTOCOL);
     }
 
 
@@ -141,18 +151,18 @@ public class Configuration {
 
 
     private static Configuration load(final Properties properties) {
-        return new Configuration(checkParameters(properties));
+        return new Configuration(checkAndDefineParameters(properties));
     }
 
 
-    private static Properties checkParameters(Properties properties) {
+    private static Properties checkAndDefineParameters(Properties properties) {
         checkServiceHandler(properties);
         checkServicePort(properties);
         checkMailRecipient(properties);
         checkSMTPServer(properties);
         checkSMTPAuthority(properties);
-        checkSMTPPort(properties);
-
+        defineSMTPPort(properties);
+        defineSMTPProtocol(properties);
         return properties;
     }
 
@@ -173,7 +183,7 @@ public class Configuration {
 
 
     private static void checkServicePort(final Properties properties) {
-        int servicePort = Integer.parseInt(Validate.notNullOrEmpty(SERVICE_PORT, properties.getProperty(SERVICE_PORT)));
+        int servicePort = Integer.parseInt(Validate.required(SERVICE_PORT, properties.getProperty(SERVICE_PORT)));
         Validate.isGreaterOrEqual(SERVICE_PORT, servicePort, PRIVATE_PORTS_MINIMAL);
         Validate.isLessOrEqual(SERVICE_PORT, servicePort, PRIVATE_PORTS_MAXIMAL);
     }
@@ -185,25 +195,25 @@ public class Configuration {
 
 
     private static void checkSMTPAuthority(final Properties properties) {
-        boolean authRequired = Boolean.valueOf(properties.getProperty(SMTP_AUTH_REQUIRE));
+        boolean authRequired = Boolean.valueOf(properties.getProperty(SMTP_AUTH));
 
         if (authRequired && (properties.getProperty(SMTP_USERNAME).isEmpty())) {
-            throw new IllegalStateException("\'" + SMTP_AUTH_REQUIRE + "\' is set to TRUE, but \'"
+            throw new IllegalStateException("\'" + SMTP_AUTH + "\' is set to TRUE, but \'"
                     + SMTP_USERNAME + "\' was not defined.");
         }
     }
 
 
-    private static void checkSMTPPort(Properties properties) {
-        int port = DEFAULT_SMTP_PORT;
+    private static void defineSMTPPort(Properties properties) {
+        int port = BASIC_SMTP_PORT;
 
         if (properties.containsKey(SMTP_PORT)) {
             port = Integer.parseInt(properties.getProperty(SMTP_PORT));
         } else {
-            if (Boolean.valueOf(properties.getProperty(SMTP_SSL_ENABLE))) {
-                port = (Boolean.valueOf(properties.getProperty(SMTP_STARTTLS_ENABLE)))
-                        ? DEFAULT_STARTTLS_SMTP_PORT
-                        : DEFAULT_SECURE_SMTP_PORT;
+            if (Boolean.valueOf(properties.getProperty(SMTP_SSL))) {
+                port = (Boolean.valueOf(properties.getProperty(SMTP_STARTTLS)))
+                        ? STARTTLS_SMTP_PORT
+                        : SECURE_SMTP_PORT;
             }
         }
 
@@ -211,11 +221,28 @@ public class Configuration {
     }
 
 
+    private static void defineSMTPProtocol(Properties properties) {
+        String protocol;
+
+        if (properties.containsKey(SMTP_PROTOCOL)) {
+            protocol = properties.getProperty(SMTP_PROTOCOL);
+        } else {
+            boolean isSSL = Boolean.valueOf(properties.getProperty(SMTP_SSL));
+            boolean isStartTLS = Boolean.valueOf(properties.getProperty(SMTP_STARTTLS));
+            protocol = (isSSL || isStartTLS)
+                    ? SECURE_SMTP_PROTOCOL
+                    : BASIC_SMTP_PROTOCOL;
+        }
+
+        properties.put(SMTP_PROTOCOL, protocol);
+    }
+
+
     private static Properties buildDefault() {
         Properties properties = new Properties();
-        properties.put(SMTP_AUTH_REQUIRE, DEFAULT_SMTP_AUTH_REQUIRE);
-        properties.put(SMTP_SSL_ENABLE, DEFAULT_SMTP_SSL_ENABLE);
-        properties.put(SMTP_STARTTLS_ENABLE, DEFAULT_SMTP_STARTTLS_ENABLE);
+        properties.put(SMTP_AUTH, DEFAULT_SMTP_AUTH);
+        properties.put(SMTP_SSL, DEFAULT_SMTP_SSL);
+        properties.put(SMTP_STARTTLS, DEFAULT_SMTP_STARTTLS);
         properties.put(SMTP_USERNAME, DEFAULT_SMTP_USERNAME);
         properties.put(SMTP_PASSWORD, DEFAULT_SMTP_PASSWORD);
         return properties;

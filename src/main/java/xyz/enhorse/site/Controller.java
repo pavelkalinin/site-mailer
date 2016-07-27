@@ -1,5 +1,7 @@
 package xyz.enhorse.site;
 
+import xyz.enhorse.commons.Validate;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -12,24 +14,28 @@ import java.io.IOException;
  */
 public class Controller extends HttpServlet {
 
-    private final Configuration cfg;
+    private final Mailer mailer;
 
 
     public Controller(final Configuration configuration) {
-        cfg = configuration;
+        mailer = new Mailer(Validate.notNull("configuration", configuration));
     }
 
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String from = request.getParameter("from");
-        String subject = request.getParameter("subj");
-        String message = request.getParameter("msg");
-
-        response.getWriter().print("from: \'" + from
-                + "\' with subject \'" + subject
-                + "\'\n" + message);
-        response.setStatus(HttpServletResponse.SC_ACCEPTED);
+        try {
+            MailMessage message = new MailMessage.Builder()
+                    .addSender(request.getParameter("from"))
+                    .addSubject(request.getParameter("subj"))
+                    .addMessage(request.getParameter("msg"))
+                    .build();
+            mailer.sendMessage(message);
+            response.setStatus(HttpServletResponse.SC_ACCEPTED);
+        } catch (Exception ex) {
+            response.getWriter().append(ex.getMessage());
+            response.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
+        }
     }
 
 }
