@@ -1,6 +1,12 @@
 package xyz.enhorse.site;
 
-import javax.mail.*;
+import javax.mail.Address;
+import javax.mail.Authenticator;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -22,16 +28,7 @@ public class Mailer {
     public Mailer(final Configuration configuration) {
         mailServerProperties = setupServer(configuration);
         authenticator = setupAuthority(configuration);
-        recipient = setupRecipient(configuration);
-    }
-
-
-    private InternetAddress setupRecipient(final Configuration configuration) {
-        try {
-            return new InternetAddress(configuration.recipient());
-        } catch (AddressException ex) {
-            throw new IllegalArgumentException("Illegal recipient address: \'" + configuration.recipient() + "\'");
-        }
+        recipient = configuration.recipientAddress();
     }
 
 
@@ -44,10 +41,10 @@ public class Mailer {
         Properties properties = System.getProperties();
         String prefix = "mail" + configuration.smtpTransportProtocol();
 
-        properties.put(prefix + ".host", configuration.smtpServer());
-        properties.put(prefix + ".port", configuration.smtpPort());
-        properties.put(prefix + ".auth", configuration.smtpAuthorizationRequire());
-        properties.put(prefix + ".starttls.enable", configuration.smtpSTARTSSLEnable());
+        properties.put(prefix + ".host", configuration.smtpHost());
+        properties.put(prefix + ".servicePort", configuration.smtpPort());
+        properties.put(prefix + ".auth", configuration.smtpAuthorizationRequired());
+        properties.put(prefix + ".starttls.enable", configuration.smtpTLSEnabled());
 
         properties.put("mail.transport.protocol", configuration.smtpTransportProtocol());
 
@@ -77,7 +74,7 @@ public class Mailer {
     private MimeMessage generateMimeMessage(final Session session, final MailMessage message) {
         MimeMessage mimeMessage = new MimeMessage(session);
         try {
-            mimeMessage.setSender(convertEmailToInetAddress(message.sender()));
+            mimeMessage.setSender(convertToAddress(message.sender()));
             mimeMessage.addRecipient(Message.RecipientType.TO, recipient);
             mimeMessage.setSubject(message.subject());
             mimeMessage.setContent(message.message(), "text/html");
@@ -85,7 +82,7 @@ public class Mailer {
         } catch (MessagingException ex) {
             throw new IllegalStateException("Failed to generate a MIME message " +
                     "from the message \'" + message + "\' " +
-                    "to the recipient \'" + recipient + "\' " +
+                    "to the recipientAddress \'" + recipient + "\' " +
                     "during the session + \'" + session + "\' ");
         }
 
@@ -93,9 +90,9 @@ public class Mailer {
     }
 
 
-    private Address convertEmailToInetAddress(final Email sender) {
+    private Address convertToAddress(final String sender) {
         try {
-            return new InternetAddress(sender.getAddress());
+            return new InternetAddress(sender);
         } catch (AddressException ex) {
             throw new IllegalArgumentException("Illegal sender address: \'" + sender + "\'");
         }
@@ -112,7 +109,7 @@ public class Mailer {
     }
 
 
-    private class SMTPAuthenticator extends javax.mail.Authenticator {
+    private static class SMTPAuthenticator extends javax.mail.Authenticator {
 
         private String username;
         private String password;

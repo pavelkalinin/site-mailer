@@ -13,18 +13,20 @@ public class Application {
     public static void main(String[] args) throws Exception {
         if (args.length < 1) {
             System.out.println("usage: mailer access.properties.file");
-            System.exit(1);
+            System.exit(0);
         }
 
         Configuration configuration = Configuration.loadFromFile(args[0]);
-        System.out.println(configuration);
+        if (configuration.isDebugMode()) {
+            configuration.print();
+        }
 
         Controller controller = new Controller(configuration);
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-        context.addServlet(new ServletHolder(controller), configuration.handler());
+        context.addServlet(new ServletHolder(controller), configuration.serviceHandler());
 
-        Server server = new Server(configuration.port());
+        Server server = new Server(configuration.servicePort());
         server.setHandler(context);
         server.start();
         server.join();

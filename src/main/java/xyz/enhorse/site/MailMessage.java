@@ -8,19 +8,19 @@ import xyz.enhorse.commons.Validate;
  */
 public class MailMessage {
 
-    private final Email sender;
+    private final String sender;
     private final String subject;
     private final String message;
 
 
     private MailMessage(final String sender, final String subject, final String message) {
-        this.sender = Email.parse(sender);
+        this.sender = Validate.required("sender email", sender);
         this.subject = Validate.defaultIfNull(subject, "It sent from site");
         this.message = Validate.defaultIfNull(message, "The message is empty");
     }
 
 
-    public Email sender() {
+    public String sender() {
         return sender;
     }
 
