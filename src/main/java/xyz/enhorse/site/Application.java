@@ -8,7 +8,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
  * @author <a href="mailto:pavel13kalinin@gmail.com">Pavel Kalinin</a>
  *         25.07.2016
  */
-public class Mailer {
+public class Application {
 
     public static void main(String[] args) throws Exception {
         if (args.length < 1) {
