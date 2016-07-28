@@ -18,7 +18,8 @@ public class Controller extends HttpServlet {
 
 
     public Controller(final Configuration configuration) {
-        mailer = new Mailer(Validate.notNull("configuration", configuration));
+        Validate.notNull("configuration", configuration);
+        mailer = new Mailer(configuration.smtpServer(), configuration.recipient());
     }
 
 
@@ -30,7 +31,7 @@ public class Controller extends HttpServlet {
                     .addSubject(request.getParameter("subj"))
                     .addMessage(request.getParameter("msg"))
                     .build();
-            mailer.sendMessage(message);
+            mailer.sendMail(message);
             response.setStatus(HttpServletResponse.SC_ACCEPTED);
         } catch (Exception ex) {
             response.getWriter().append(ex.getMessage());

@@ -18,7 +18,7 @@ public class Application {
 
         Configuration configuration = Configuration.loadFromFile(args[0]);
         if (configuration.isDebugMode()) {
-            configuration.print();
+            System.out.println(configuration);
         }
 
         Controller controller = new Controller(configuration);
