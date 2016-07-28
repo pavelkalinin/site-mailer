@@ -12,26 +12,27 @@ import java.io.IOException;
  * @author <a href="mailto:pavel13kalinin@gmail.com">Pavel Kalinin</a>
  *         26.07.2016
  */
-public class Controller extends HttpServlet {
+public class MailController extends HttpServlet {
 
-    private final Mailer mailer;
+    private final MailService service;
 
 
-    public Controller(final Configuration configuration) {
-        Validate.notNull("configuration", configuration);
-        mailer = new Mailer(configuration.smtpServer(), configuration.recipient());
+    public MailController(final Configuration configuration) {
+        Validate.notNull("configuration for mail controller", configuration);
+        service = new MailService(configuration.smtpServer(), configuration.recipient());
     }
 
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            MailMessage message = new MailMessage.Builder()
-                    .addSender(request.getParameter("from"))
-                    .addSubject(request.getParameter("subj"))
-                    .addMessage(request.getParameter("msg"))
+            MailMessage mail = new MailMessage.Builder()
+                    .addFrom(request.getParameter("name"))
+                    .addEmail(request.getParameter("email"))
+                    .addSubject(request.getParameter("subject"))
+                    .addMessage(request.getParameter("content"))
                     .build();
-            mailer.sendMail(message);
+            service.sendMail(mail);
             response.setStatus(HttpServletResponse.SC_ACCEPTED);
         } catch (Exception ex) {
             response.getWriter().append(ex.getMessage());

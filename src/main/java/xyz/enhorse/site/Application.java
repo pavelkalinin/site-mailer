@@ -21,10 +21,10 @@ public class Application {
             System.out.println(configuration);
         }
 
-        Controller controller = new Controller(configuration);
+        MailController mailController = new MailController(configuration);
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-        context.addServlet(new ServletHolder(controller), configuration.serviceHandler());
+        context.addServlet(new ServletHolder(mailController), configuration.serviceHandler());
 
         Server server = new Server(configuration.servicePort());
         server.setHandler(context);

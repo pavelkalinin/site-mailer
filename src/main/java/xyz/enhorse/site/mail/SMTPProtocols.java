@@ -1,4 +1,4 @@
-package xyz.enhorse.site;
+package xyz.enhorse.site.mail;
 
 /**
  * @author <a href="mailto:pavel13kalinin@gmail.com">Pavel Kalinin</a>
@@ -8,15 +8,15 @@ public enum SMTPProtocols {
     BASIC("smtp"),
     SECURE("smtps");
 
-    private final String name;
+    private final String tag;
 
 
-    SMTPProtocols(final String name) {
-        this.name = name;
+    SMTPProtocols(final String string) {
+        tag = string;
     }
 
 
-    public String definition() {
-        return name;
+    public String tag() {
+        return tag;
     }
 }

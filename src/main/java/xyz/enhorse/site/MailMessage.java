@@ -8,20 +8,27 @@ import xyz.enhorse.commons.Validate;
  */
 public class MailMessage {
 
-    private final String sender;
+    private final String from;
+    private final String email;
     private final String subject;
-    private final String message;
+    private final String content;
 
 
-    private MailMessage(final String sender, final String subject, final String message) {
-        this.sender = Validate.required("sender email", sender);
-        this.subject = Validate.defaultIfNull(subject, "It sent from site");
-        this.message = Validate.defaultIfNull(message, "The message is empty");
+    private MailMessage(final String from, final String email, final String subject, final String content) {
+        this.from = Validate.required("from", from);
+        this.email = Validate.required("email", email);
+        this.subject = Validate.required("subject", subject);
+        this.content = Validate.required("content", content);
     }
 
 
-    public String sender() {
-        return sender;
+    public String from() {
+        return from;
+    }
+
+
+    public String email() {
+        return email;
     }
 
 
@@ -30,16 +37,17 @@ public class MailMessage {
     }
 
 
-    public String message() {
-        return message;
+    public String content() {
+        return content;
     }
 
 
     @Override
     public int hashCode() {
-        int result = sender.hashCode();
+        int result = from.hashCode();
+        result = 31 * result + email.hashCode();
         result = 31 * result + subject.hashCode();
-        result = 31 * result + message.hashCode();
+        result = 31 * result + content.hashCode();
 
         return result;
     }
@@ -53,23 +61,23 @@ public class MailMessage {
 
         MailMessage that = (MailMessage) o;
 
-        return sender.equals(that.sender)
+        return from.equals(that.from)
+                && email.equals(that.email)
                 && subject.equals(that.subject)
-                && message.equals(that.message);
+                && content.equals(that.content);
     }
 
 
     @Override
     public String toString() {
-        return "from:\'" + sender() + "\'\n"
-                + "\"" + subject() + "\"\n"
-                + message();
+        return String.format("\'%s\'<%s>%n\'%s\'%n\"%s\"", from(), email(), subject(), content());
     }
 
 
     public static class Builder {
 
-        private String sender;
+        private String name;
+        private String email;
         private String subject;
         private String message;
 
@@ -78,8 +86,14 @@ public class MailMessage {
         }
 
 
-        public Builder addSender(final String sender) {
-            this.sender = sender;
+        public Builder addFrom(final String name) {
+            this.name = name;
+            return this;
+        }
+
+
+        public Builder addEmail(final String email) {
+            this.email = email;
             return this;
         }
 
@@ -97,7 +111,7 @@ public class MailMessage {
 
 
         public MailMessage build() {
-            return new MailMessage(sender, subject, message);
+            return new MailMessage(name, email, subject, message);
         }
     }
 }

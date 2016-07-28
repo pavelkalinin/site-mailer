@@ -1,4 +1,4 @@
-package xyz.enhorse.site;
+package xyz.enhorse.site.mail;
 
 import xyz.enhorse.commons.Validate;
 
@@ -15,8 +15,8 @@ public class SMTPAuthenticator extends javax.mail.Authenticator {
 
 
     public SMTPAuthenticator(String user, String password) {
-        this.user = Validate.notNull("user", user);
-        this.password = Validate.notNull("password", password);
+        this.user = Validate.notNull("user for authenticator", user);
+        this.password = Validate.notNull("password for authenticator", password);
     }
 
 

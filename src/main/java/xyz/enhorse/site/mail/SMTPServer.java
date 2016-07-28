@@ -1,4 +1,4 @@
-package xyz.enhorse.site;
+package xyz.enhorse.site.mail;
 
 import xyz.enhorse.commons.Validate;
 
@@ -19,11 +19,18 @@ public class SMTPServer {
     }
 
 
-    public Session createSession() {
-        Session session = Session.getInstance(properties.get(), authenticator());
-        session.setDebug(properties.isDebugMode());
+    public String charset() {
+        return properties.charset();
+    }
 
-        return session;
+
+    public String sender() {
+        return properties.sender();
+    }
+
+
+    public Session createSession() {
+        return Session.getInstance(properties.get(), authenticator());
     }
 
 

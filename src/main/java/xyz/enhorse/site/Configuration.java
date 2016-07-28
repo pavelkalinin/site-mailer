@@ -2,6 +2,8 @@ package xyz.enhorse.site;
 
 import xyz.enhorse.commons.HandyPath;
 import xyz.enhorse.commons.Validate;
+import xyz.enhorse.site.mail.SMTPServer;
+import xyz.enhorse.site.mail.SMTPServerProperties;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -13,18 +15,17 @@ import java.util.Properties;
  */
 public class Configuration {
 
-    private final static String DEBUG = "debug";
+    private final static String DEBUG = "service.debug";
     private final static String HANDLER = "service.handler";
     private final static String PORT = "service.port";
     private final static String RECIPIENT = "recipient.email";
 
-    private final static boolean DEFAULT_DEBUG_MODE = false;
-
     private final static int PRIVATE_PORTS_MINIMAL = 49152;
     private final static int PRIVATE_PORTS_MAXIMAL = 65535;
 
-    private final Properties PARAMETERS;
+    private final static boolean DEFAULT_DEBUG_MODE = false;
 
+    private final Properties parameters;
     private boolean debug;
     private String handler;
     private int port;
@@ -33,7 +34,8 @@ public class Configuration {
 
 
     private Configuration(final Properties properties) {
-        PARAMETERS = setup(properties);
+        parameters = Validate.notNull("parameters", properties);
+        setup();
     }
 
 
@@ -57,12 +59,7 @@ public class Configuration {
     }
 
 
-    public Properties rawProperties() {
-        return PARAMETERS;
-    }
-
-
-    boolean isDebugMode() {
+    public boolean isDebugMode() {
         return debug;
     }
 
@@ -79,46 +76,40 @@ public class Configuration {
     }
 
 
-    private Properties setup(final Properties properties) {
-        debug = readDebugMode(properties);
-        handler = readServiceHandler(properties);
-        port = readServicePort(properties);
-        recipient = readRecipientEmail(properties);
-        smtpServer = new SMTPServer(new SMTPServerProperties(properties, debug));
-
-        return properties;
+    private void setup() {
+        debug = readDebugMode();
+        handler = readServiceHandler();
+        port = readServicePort();
+        recipient = readRecipientEmail();
+        smtpServer = new SMTPServer(new SMTPServerProperties(parameters));
     }
 
 
-    private boolean readDebugMode(final Properties properties) {
-        boolean debug;
-
-        try {
-            debug = Boolean.valueOf(properties.getProperty(DEBUG));
-        } catch (Exception ex) {
-            debug = DEFAULT_DEBUG_MODE;
-        }
-
-        return debug;
-    }
-
-
-    private String readServiceHandler(final Properties properties) {
+    private String readServiceHandler() {
         String property = HANDLER;
-        return Validate.required(property, properties.getProperty(property));
+        return Validate.required(property, parameters.getProperty(property));
     }
 
 
-    private int readServicePort(final Properties properties) {
+    private int readServicePort() {
         String property = PORT;
-        int port = Integer.parseInt(Validate.required(property, properties.getProperty(property)));
+        int port = Integer.parseInt(Validate.required(property, parameters.getProperty(property)));
         return Validate.isBetweenOrEquals("service port", port, PRIVATE_PORTS_MINIMAL, PRIVATE_PORTS_MAXIMAL);
     }
 
 
-    private String readRecipientEmail(final Properties properties) {
+    private String readRecipientEmail() {
         String property = RECIPIENT;
-        return Validate.required(property, properties.getProperty(property));
+        return Validate.required(property, parameters.getProperty(property));
+    }
+
+
+    private boolean readDebugMode() {
+        try {
+            return Boolean.valueOf(parameters.getProperty(DEBUG));
+        } catch (Exception ex) {
+            return DEFAULT_DEBUG_MODE;
+        }
     }
 
 
