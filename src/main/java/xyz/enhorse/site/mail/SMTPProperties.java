@@ -7,73 +7,73 @@ package xyz.enhorse.site.mail;
 public enum SMTPProperties {
     HOST("smtp.host") {
         @Override
-        public String forProtocol(final SMTPProtocols protocol) {
+        public String of(final SMTPProtocols protocol) {
             return "mail." + protocol.tag() + ".host";
         }
     },
     PORT("smtp.port") {
         @Override
-        public String forProtocol(final SMTPProtocols protocol) {
+        public String of(final SMTPProtocols protocol) {
             return "mail." + protocol.tag() + ".port";
         }
     },
     SENDER("smtp.sender") {
         @Override
-        public String forProtocol(final SMTPProtocols protocol) {
+        public String of(final SMTPProtocols protocol) {
             return "mail." + protocol.tag() + ".sender";
         }
     },
     USER("smtp.user") {
         @Override
-        public String forProtocol(final SMTPProtocols protocol) {
+        public String of(final SMTPProtocols protocol) {
             return "mail." + protocol.tag() + ".user";
         }
     },
     PASSWORD("smtp.password") {
         @Override
-        public String forProtocol(final SMTPProtocols protocol) {
+        public String of(final SMTPProtocols protocol) {
             return "mail." + protocol.tag() + ".password";
         }
     },
     AUTH("smtp.auth") {
         @Override
-        public String forProtocol(final SMTPProtocols protocol) {
+        public String of(final SMTPProtocols protocol) {
             return "mail." + protocol.tag() + ".auth";
         }
     },
     SSL("smtp.ssl") {
         @Override
-        public String forProtocol(final SMTPProtocols protocol) {
+        public String of(final SMTPProtocols protocol) {
             return "mail." + protocol.tag() + ".ssl.enable";
         }
     },
     TLS("smtp.tls") {
         @Override
-        public String forProtocol(final SMTPProtocols protocol) {
+        public String of(final SMTPProtocols protocol) {
             return "mail." + protocol.tag() + ".starttls.enable";
         }
     },
     MAILER("smtp.x-mailer") {
         @Override
-        public String forProtocol(final SMTPProtocols protocol) {
+        public String of(final SMTPProtocols protocol) {
             return "mail." + protocol.tag() + ".x-mailer";
         }
     },
     DEBUG("smtp.debug") {
         @Override
-        public String forProtocol(final SMTPProtocols protocol) {
+        public String of(final SMTPProtocols protocol) {
             return "mail.debug";
         }
     },
     PROTOCOL("smtp.protocol") {
         @Override
-        public String forProtocol(final SMTPProtocols protocol) {
+        public String of(final SMTPProtocols protocol) {
             return "mail.transport.protocol";
         }
     },
     CHARSET("smtp.charset") {
         @Override
-        public String forProtocol(final SMTPProtocols protocol) {
+        public String of(final SMTPProtocols protocol) {
             return "mail.charset";
         }
     };
@@ -92,5 +92,5 @@ public enum SMTPProperties {
     }
 
 
-    public abstract String forProtocol(final SMTPProtocols protocol);
+    public abstract String of(final SMTPProtocols protocol);
 }
