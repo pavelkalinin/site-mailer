@@ -2,11 +2,9 @@ package xyz.enhorse.site.mail;
 
 import xyz.enhorse.commons.Validate;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.NoSuchProviderException;
-import javax.mail.Session;
-import javax.mail.Transport;
+import javax.mail.*;
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * @author <a href="mailto:pavel13kalinin@gmail.com">Pavel Kalinin</a>
@@ -51,7 +49,7 @@ public class SMTPTransport {
         try {
             transport.sendMessage(message, message.getAllRecipients());
         } catch (MessagingException ex) {
-            throw new IllegalStateException("Failed to send the message \'" + message + "\' ", ex);
+            throw new IllegalStateException("Failed to send the message \'" + messageToString(message) + "\' ", ex);
         }
     }
 
@@ -63,4 +61,21 @@ public class SMTPTransport {
             throw new IllegalStateException("Failed to close a transport", ex);
         }
     }
+
+
+    private static String messageToString(final Message message) {
+        StringBuilder builder = new StringBuilder();
+        try {
+            builder.append("from:").append(Arrays.deepToString(message.getFrom())).append("\';")
+                    .append("subject:\'").append(message.getSubject()).append("\';")
+                    .append("content:").append(Objects.toString(message.getContent()));
+        } catch (Exception ex) {
+            builder.append((builder.length() == 0)
+                    ? String.format("Can't convert message%n")
+                    : String.format("%n...failed to convert message%n"));
+            builder.append(ex.getMessage());
+        }
+        return builder.toString();
+    }
+
 }
