@@ -48,6 +48,6 @@ public class SMTPServer {
 
     @Override
     public String toString() {
-        return "\'" + title() + "\' " + configuration;
+        return configuration.toString();
     }
 }

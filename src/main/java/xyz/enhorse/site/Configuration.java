@@ -64,13 +64,17 @@ public class Configuration {
 
     @Override
     public String toString() {
-        return "Configuration{" +
-                "debug=" + isDebugMode() +
-                ", handler=\'" + serviceHandler() + '\'' +
-                ", port=" + servicePort() +
-                ", recipient=\'" + recipient() + '\'' +
-                ", smtpServer=" + smtpServer() +
-                '}';
+        return String.format("[" +
+                        "service.debug.mode=%b; " +
+                        "service.handler=\"%s\"; " +
+                        "service.port=%d; " +
+                        "recipient.address=\"%s\"; " +
+                        "smtp.server=%s]",
+                isDebugMode(),
+                serviceHandler(),
+                servicePort(),
+                recipient(),
+                smtpServer());
     }
 
 

@@ -3,6 +3,7 @@ package xyz.enhorse.site.mail;
 import xyz.enhorse.commons.Validate;
 
 import java.nio.charset.Charset;
+import java.util.Map;
 import java.util.Properties;
 
 import static xyz.enhorse.site.mail.SMTPProperties.*;
@@ -12,10 +13,6 @@ import static xyz.enhorse.site.mail.SMTPProperties.*;
  *         28.07.2016
  */
 public class SMTPConfiguration {
-
-    private final static int BASIC_PORT = 25;
-    private final static int SECURE_PORT = 465;
-    private final static int MSA_PORT = 587;
 
     private final static String DEFAULT_USER = "";
     private final static String DEFAULT_PASSWORD = "";
@@ -41,7 +38,7 @@ public class SMTPConfiguration {
 
 
     public SMTPConfiguration(final Properties properties) {
-        this.parameters = Validate.notNull("properties for smtp server", properties);
+        parameters = Validate.notNull("properties for smtp server", properties);
         setup();
     }
 
@@ -76,27 +73,21 @@ public class SMTPConfiguration {
     }
 
 
-    boolean isDebugMode() {
-        return debug;
-    }
-
-
     public Properties get() {
         Properties properties = new Properties();
 
-        //due to javax.mail counts that all properties' values will be String convert ones to String
-        properties.put(HOST.forProtocol(protocol), host);
-        properties.put(PORT.forProtocol(protocol), String.valueOf(port));
-        properties.put(SENDER.forProtocol(protocol), sender);
-        properties.put(USER.forProtocol(protocol), user);
-        properties.put(PASSWORD.forProtocol(protocol), password);
-        properties.put(AUTH.forProtocol(protocol), String.valueOf(authRequired));
-        properties.put(SSL.forProtocol(protocol), String.valueOf(sslEnabled));
-        properties.put(TLS.forProtocol(protocol), String.valueOf(tlsEnabled));
-        properties.put(CHARSET.forProtocol(protocol), String.valueOf(charset));
-        properties.put(PROTOCOL.forProtocol(protocol), protocol.tag());
-        properties.put(MAILER.forProtocol(protocol), mailer);
-        properties.put(DEBUG.forProtocol(protocol), String.valueOf(debug));
+        properties.put(HOST.of(protocol), host);
+        properties.put(PORT.of(protocol), port);
+        properties.put(SENDER.of(protocol), sender);
+        properties.put(USER.of(protocol), user);
+        properties.put(PASSWORD.of(protocol), password);
+        properties.put(AUTH.of(protocol), authRequired);
+        properties.put(SSL.of(protocol), sslEnabled);
+        properties.put(TLS.of(protocol), tlsEnabled);
+        properties.put(CHARSET.of(protocol), charset.name());
+        properties.put(PROTOCOL.of(protocol), protocol.tag());
+        properties.put(MAILER.of(protocol), mailer);
+        properties.put(DEBUG.of(protocol), String.valueOf(debug)); // javax.mail.Session counts on to find String
 
         return properties;
     }
@@ -128,14 +119,9 @@ public class SMTPConfiguration {
         try {
             return Integer.parseInt(parameters.getProperty(PORT.property()));
         } catch (Exception ex) {
-            return definePort();
+            return defineProtocol().port();
         }
 
-    }
-
-
-    private int definePort() {
-        return (readTLS()) ? MSA_PORT : ((readSSL()) ? SECURE_PORT : BASIC_PORT);
     }
 
 
@@ -207,6 +193,19 @@ public class SMTPConfiguration {
 
     @Override
     public String toString() {
-        return get().toString();
+        StringBuilder builder = new StringBuilder();
+
+        for (Map.Entry<Object, Object> entry : get().entrySet()) {
+            builder.append(entry.getKey())
+                    .append('=');
+
+            Object value = entry.getValue();
+            builder.append((value instanceof String) ? String.format("\"%s\"", value) : value)
+                    .append("; ");
+        }
+
+        builder.setLength(builder.length() - 2);
+
+        return "[" + builder + "]";
     }
 }
