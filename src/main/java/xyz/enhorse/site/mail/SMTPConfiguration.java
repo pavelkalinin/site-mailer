@@ -5,24 +5,23 @@ import xyz.enhorse.commons.Validate;
 import java.nio.charset.Charset;
 import java.util.Properties;
 
-import static xyz.enhorse.site.mail.SMTPConfigurationProperties.*;
+import static xyz.enhorse.site.mail.SMTPProperties.*;
 
 /**
  * @author <a href="mailto:pavel13kalinin@gmail.com">Pavel Kalinin</a>
  *         28.07.2016
  */
-public class SMTPServerProperties {
+public class SMTPConfiguration {
 
     private final static int BASIC_PORT = 25;
     private final static int SECURE_PORT = 465;
     private final static int MSA_PORT = 587;
 
-    private final static String DEFAULT_SENDER = "enhorse.xyz";
     private final static String DEFAULT_USER = "";
     private final static String DEFAULT_PASSWORD = "";
     private final static boolean DEFAULT_SSL = false;
     private final static boolean DEFAULT_TLS = false;
-    private final static boolean DEFAULT_DEBUG_MODE = false;
+
 
     private final Properties parameters;
 
@@ -39,7 +38,7 @@ public class SMTPServerProperties {
     private boolean debug;
 
 
-    public SMTPServerProperties(final Properties properties) {
+    public SMTPConfiguration(final Properties properties) {
         this.parameters = Validate.notNull("properties for smtp server", properties);
         setup();
     }
@@ -132,7 +131,7 @@ public class SMTPServerProperties {
 
 
     private String readSender() {
-        return parameters.getProperty(SENDER.property(), DEFAULT_SENDER);
+        return parameters.getProperty(SENDER.property(), readUser());
     }
 
 
@@ -188,10 +187,6 @@ public class SMTPServerProperties {
 
 
     private boolean readDebug() {
-        try {
-            return Boolean.valueOf(parameters.getProperty(DEBUG.property()));
-        } catch (Exception ex) {
-            return DEFAULT_DEBUG_MODE;
-        }
+        return Boolean.parseBoolean(parameters.getProperty(DEBUG.property()));
     }
 }

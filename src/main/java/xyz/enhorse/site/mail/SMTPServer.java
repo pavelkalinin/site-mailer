@@ -11,10 +11,10 @@ import javax.mail.Session;
  */
 public class SMTPServer {
 
-    private final SMTPServerProperties properties;
+    private final SMTPConfiguration properties;
 
 
-    public SMTPServer(final SMTPServerProperties properties) {
+    public SMTPServer(final SMTPConfiguration properties) {
         this.properties = Validate.notNull("smtp server properties", properties);
     }
 

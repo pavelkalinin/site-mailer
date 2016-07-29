@@ -4,7 +4,7 @@ package xyz.enhorse.site.mail;
  * @author <a href="mailto:pavel13kalinin@gmail.com">Pavel Kalinin</a>
  *         28.07.2016
  */
-public enum SMTPConfigurationProperties {
+public enum SMTPProperties {
     HOST("smtp.host") {
         @Override
         public String forProtocol(final SMTPProtocols protocol) {
@@ -76,7 +76,7 @@ public enum SMTPConfigurationProperties {
     private final String property;
 
 
-    SMTPConfigurationProperties(final String property) {
+    SMTPProperties(final String property) {
         this.property = property;
     }
 

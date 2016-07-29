@@ -2,8 +2,8 @@ package xyz.enhorse.site;
 
 import xyz.enhorse.commons.HandyPath;
 import xyz.enhorse.commons.Validate;
+import xyz.enhorse.site.mail.SMTPConfiguration;
 import xyz.enhorse.site.mail.SMTPServer;
-import xyz.enhorse.site.mail.SMTPServerProperties;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -22,8 +22,6 @@ public class Configuration {
 
     private final static int PRIVATE_PORTS_MINIMAL = 49152;
     private final static int PRIVATE_PORTS_MAXIMAL = 65535;
-
-    private final static boolean DEFAULT_DEBUG_MODE = false;
 
     private final Properties parameters;
     private boolean debug;
@@ -81,7 +79,7 @@ public class Configuration {
         handler = readServiceHandler();
         port = readServicePort();
         recipient = readRecipientEmail();
-        smtpServer = new SMTPServer(new SMTPServerProperties(parameters));
+        smtpServer = new SMTPServer(new SMTPConfiguration(parameters));
     }
 
 
@@ -105,11 +103,7 @@ public class Configuration {
 
 
     private boolean readDebugMode() {
-        try {
-            return Boolean.valueOf(parameters.getProperty(DEBUG));
-        } catch (Exception ex) {
-            return DEFAULT_DEBUG_MODE;
-        }
+        return Boolean.parseBoolean(parameters.getProperty(DEBUG));
     }
 
 
