@@ -19,3 +19,6 @@ access.properties
 
 # System
 *.DS_Store
+
+# Release
+/src/test/
