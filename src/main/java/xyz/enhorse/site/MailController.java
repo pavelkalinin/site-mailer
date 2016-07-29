@@ -27,7 +27,7 @@ public class MailController extends HttpServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             MailMessage mail = new MailMessage.Builder()
-                    .addFrom(request.getParameter("name"))
+                    .addName(request.getParameter("name"))
                     .addEmail(request.getParameter("email"))
                     .addSubject(request.getParameter("subject"))
                     .addMessage(request.getParameter("content"))

@@ -35,6 +35,12 @@ public enum SMTPProperties {
             return "mail." + protocol.tag() + ".password";
         }
     },
+    AUTH("smtp.auth") {
+        @Override
+        public String forProtocol(final SMTPProtocols protocol) {
+            return "mail." + protocol.tag() + ".auth";
+        }
+    },
     SSL("smtp.ssl") {
         @Override
         public String forProtocol(final SMTPProtocols protocol) {
@@ -47,10 +53,10 @@ public enum SMTPProperties {
             return "mail." + protocol.tag() + ".starttls.enable";
         }
     },
-    AUTH("smtp.auth") {
+    MAILER("smtp.x-mailer") {
         @Override
         public String forProtocol(final SMTPProtocols protocol) {
-            return "mail." + protocol.tag() + ".auth";
+            return "mail." + protocol.tag() + ".x-mailer";
         }
     },
     DEBUG("smtp.debug") {

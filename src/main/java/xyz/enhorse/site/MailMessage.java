@@ -8,22 +8,22 @@ import xyz.enhorse.commons.Validate;
  */
 public class MailMessage {
 
-    private final String from;
+    private final String name;
     private final String email;
     private final String subject;
     private final String content;
 
 
-    private MailMessage(final String from, final String email, final String subject, final String content) {
-        this.from = Validate.required("from", from);
+    private MailMessage(final String name, final String email, final String subject, final String content) {
+        this.name = Validate.required("name", name);
         this.email = Validate.required("email", email);
         this.subject = Validate.required("subject", subject);
         this.content = Validate.required("content", content);
     }
 
 
-    public String from() {
-        return from;
+    public String name() {
+        return name;
     }
 
 
@@ -44,7 +44,7 @@ public class MailMessage {
 
     @Override
     public int hashCode() {
-        int result = from.hashCode();
+        int result = name.hashCode();
         result = 31 * result + email.hashCode();
         result = 31 * result + subject.hashCode();
         result = 31 * result + content.hashCode();
@@ -61,7 +61,7 @@ public class MailMessage {
 
         MailMessage that = (MailMessage) o;
 
-        return from.equals(that.from)
+        return name.equals(that.name)
                 && email.equals(that.email)
                 && subject.equals(that.subject)
                 && content.equals(that.content);
@@ -70,7 +70,7 @@ public class MailMessage {
 
     @Override
     public String toString() {
-        return String.format("\'%s\'<%s>%n\'%s\'%n\"%s\"", from(), email(), subject(), content());
+        return String.format("\'%s\'<%s>%n\'%s\'%n\"%s\"", name(), email(), subject(), content());
     }
 
 
@@ -86,7 +86,7 @@ public class MailMessage {
         }
 
 
-        public Builder addFrom(final String name) {
+        public Builder addName(final String name) {
             this.name = name;
             return this;
         }

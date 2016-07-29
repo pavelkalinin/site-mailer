@@ -11,32 +11,43 @@ import javax.mail.Session;
  */
 public class SMTPServer {
 
-    private final SMTPConfiguration properties;
+    private final SMTPConfiguration configuration;
 
 
-    public SMTPServer(final SMTPConfiguration properties) {
-        this.properties = Validate.notNull("smtp server properties", properties);
+    public SMTPServer(final SMTPConfiguration configuration) {
+        this.configuration = Validate.notNull("smtp server configuration", configuration);
     }
 
 
     public String charset() {
-        return properties.charset();
+        return configuration.charset();
     }
 
 
     public String sender() {
-        return properties.sender();
+        return configuration.sender();
     }
 
 
     public Session createSession() {
-        return Session.getInstance(properties.get(), authenticator());
+        return Session.getInstance(configuration.get(), authenticator());
+    }
+
+
+    public String title() {
+        return configuration.mailer();
     }
 
 
     private Authenticator authenticator() {
-        return properties.isAuthRequired()
-                ? (new SMTPAuthenticator(properties.user(), properties.password()))
+        return configuration.isAuthRequired()
+                ? (new SMTPAuthenticator(configuration.user(), configuration.password()))
                 : null;
+    }
+
+
+    @Override
+    public String toString() {
+        return "\'" + title() + "\' " + configuration;
     }
 }

@@ -46,11 +46,14 @@ public class MailService {
         MimeMessage mimeMessage = new MimeMessage(session);
 
         try {
-            mimeMessage.setFrom(convertToAddress(message.email(), message.from()));
-            mimeMessage.setSender(convertToAddress(server.sender()));
-            mimeMessage.addRecipient(Message.RecipientType.TO, recipient);
+            Address from = convertToAddress(message.name(), message.email());
+            mimeMessage.setFrom(from);
             mimeMessage.setSubject(message.subject(), server.charset());
             mimeMessage.setText(message.content(), server.charset());
+            mimeMessage.setSender(convertToAddress(server.sender()));
+            mimeMessage.setReplyTo(new Address[]{from});
+            mimeMessage.setHeader("X-Mailer", server.title());
+            mimeMessage.addRecipient(Message.RecipientType.TO, recipient);
             mimeMessage.saveChanges();
         } catch (MessagingException ex) {
             throw new IllegalStateException("Failed to generate a MIME message " +
