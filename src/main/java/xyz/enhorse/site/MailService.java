@@ -29,7 +29,7 @@ public class MailService {
 
     public MailService(final SMTPServer server, final String recipient) {
         this.server = Validate.notNull("smtp server for mail service", server);
-        this.recipient = convertToAddress(Validate.notNull("recipient for mail service", recipient));
+        this.recipient = recipient(Validate.notNull("recipient for mail service", recipient));
     }
 
 
@@ -46,11 +46,11 @@ public class MailService {
         MimeMessage mimeMessage = new MimeMessage(session);
 
         try {
-            Address from = convertToAddress(message.name(), message.email());
+            Address from = from(message.name(), message.email());
             mimeMessage.setFrom(from);
             mimeMessage.setSubject(message.subject(), server.charset());
             mimeMessage.setText(message.content(), server.charset());
-            mimeMessage.setSender(convertToAddress(server.sender()));
+            mimeMessage.setSender(sender());
             mimeMessage.setReplyTo(new Address[]{from});
             mimeMessage.setHeader("X-Mailer", server.title());
             mimeMessage.addRecipient(Message.RecipientType.TO, recipient);
@@ -66,20 +66,29 @@ public class MailService {
     }
 
 
-    private Address convertToAddress(final String address) {
+    private Address recipient(final String recipient) {
         try {
-            return new InternetAddress(address);
+            return new InternetAddress(recipient);
         } catch (AddressException ex) {
-            throw new IllegalArgumentException("Illegal address: \'" + address + "\'", ex);
+            throw new IllegalArgumentException("Illegal recipient address: \'" + recipient + "\'", ex);
         }
     }
 
 
-    private Address convertToAddress(final String name, final String address) {
+    private Address sender() {
+        try {
+            return new InternetAddress(server.sender());
+        } catch (AddressException ex) {
+            return null;
+        }
+    }
+
+
+    private Address from(final String name, final String address) {
         try {
             return new InternetAddress(address, name, server.charset());
         } catch (UnsupportedEncodingException ex) {
-            throw new IllegalArgumentException("Illegal address: \'" + address + "\'", ex);
+            throw new IllegalArgumentException("Illegal \'from:\' address: \'" + address + "\'", ex);
         }
     }
 }
