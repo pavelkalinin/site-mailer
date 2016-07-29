@@ -19,6 +19,7 @@ public class SMTPConfiguration {
 
     private final static String DEFAULT_USER = "";
     private final static String DEFAULT_PASSWORD = "";
+    private final static String DEFAULT_MAILER = "";
     private final static boolean DEFAULT_SSL = false;
     private final static boolean DEFAULT_TLS = false;
 
@@ -34,6 +35,7 @@ public class SMTPConfiguration {
     private boolean sslEnabled;
     private boolean tlsEnabled;
     private SMTPProtocols protocol;
+    private String mailer;
     private Charset charset;
     private boolean debug;
 
@@ -69,26 +71,32 @@ public class SMTPConfiguration {
     }
 
 
+    public String mailer() {
+        return mailer;
+    }
+
+
     boolean isDebugMode() {
         return debug;
     }
 
 
     public Properties get() {
-        Properties properties = new Properties(parameters);
+        Properties properties = new Properties();
 
+        //due to javax.mail counts that all properties' values will be String convert ones to String
         properties.put(HOST.forProtocol(protocol), host);
-        properties.put(PORT.forProtocol(protocol), port);
+        properties.put(PORT.forProtocol(protocol), String.valueOf(port));
+        properties.put(SENDER.forProtocol(protocol), sender);
         properties.put(USER.forProtocol(protocol), user);
         properties.put(PASSWORD.forProtocol(protocol), password);
-        properties.put(AUTH.forProtocol(protocol), authRequired);
-        properties.put(SSL.forProtocol(protocol), sslEnabled);
-        properties.put(TLS.forProtocol(protocol), tlsEnabled);
-        properties.put(CHARSET.forProtocol(protocol), charset);
+        properties.put(AUTH.forProtocol(protocol), String.valueOf(authRequired));
+        properties.put(SSL.forProtocol(protocol), String.valueOf(sslEnabled));
+        properties.put(TLS.forProtocol(protocol), String.valueOf(tlsEnabled));
+        properties.put(CHARSET.forProtocol(protocol), String.valueOf(charset));
         properties.put(PROTOCOL.forProtocol(protocol), protocol.tag());
-        properties.put(DEBUG.forProtocol(protocol), debug);
-
-        //TODO fix strange behaviour of 'mail.debug' property
+        properties.put(MAILER.forProtocol(protocol), mailer);
+        properties.put(DEBUG.forProtocol(protocol), String.valueOf(debug));
 
         return properties;
     }
@@ -105,6 +113,7 @@ public class SMTPConfiguration {
         tlsEnabled = readTLS();
         charset = readCharset();
         protocol = defineProtocol();
+        mailer = readMailer();
         debug = readDebug();
     }
 
@@ -186,7 +195,18 @@ public class SMTPConfiguration {
     }
 
 
+    private String readMailer() {
+        return parameters.getProperty(MAILER.property(), DEFAULT_MAILER);
+    }
+
+
     private boolean readDebug() {
         return Boolean.parseBoolean(parameters.getProperty(DEBUG.property()));
+    }
+
+
+    @Override
+    public String toString() {
+        return get().toString();
     }
 }
