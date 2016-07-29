@@ -19,3 +19,7 @@ access.properties
 
 # System
 *.DS_Store
+
+# Develop
+pom.xml
+.gitignore
