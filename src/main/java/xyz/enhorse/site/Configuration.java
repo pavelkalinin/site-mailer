@@ -96,7 +96,7 @@ public class Configuration {
     private int readServicePort() {
         String property = PORT;
         int port = Integer.parseInt(Validate.required(property, parameters.getProperty(property)));
-        return Validate.isBetweenOrEquals("service port", port, PRIVATE_PORTS_MINIMAL, PRIVATE_PORTS_MAXIMAL);
+        return port; //Validate.isBetweenOrEquals("service port", port, PRIVATE_PORTS_MINIMAL, PRIVATE_PORTS_MAXIMAL);
     }
 
 
