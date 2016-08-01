@@ -25,7 +25,20 @@ public class MailController extends HttpServlet {
 
 
     @Override
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            String email = request.getParameter("email");
+            response.setStatus(HttpServletResponse.SC_OK);
+        } catch (Exception ex) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        }
+    }
+
+
+    @Override
+    public void doPost(final HttpServletRequest request, final HttpServletResponse response)
+            throws ServletException, IOException {
         try {
             MailMessage mail = generateMail(request);
             service.sendMail(mail);
@@ -52,9 +65,9 @@ public class MailController extends HttpServlet {
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("name=")) {
                     name = extractParameterValue(line);
-                } else if (line.startsWith("email")) {
+                } else if (line.startsWith("email=")) {
                     email = extractParameterValue(line);
-                } else if (line.startsWith("subject")) {
+                } else if (line.startsWith("subject=")) {
                     subject = extractParameterValue(line);
                 } else if (line.startsWith("content=")) {
                     content.append(extractParameterValue(line)).append(System.lineSeparator());
