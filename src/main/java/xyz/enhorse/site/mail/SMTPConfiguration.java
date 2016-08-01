@@ -1,9 +1,9 @@
 package xyz.enhorse.site.mail;
 
+import xyz.enhorse.commons.Pretty;
 import xyz.enhorse.commons.Validate;
 
 import java.nio.charset.Charset;
-import java.util.Map;
 import java.util.Properties;
 
 import static xyz.enhorse.site.mail.SMTPProperties.*;
@@ -193,19 +193,6 @@ public class SMTPConfiguration {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-
-        for (Map.Entry<Object, Object> entry : get().entrySet()) {
-            builder.append(entry.getKey())
-                    .append('=');
-
-            Object value = entry.getValue();
-            builder.append((value instanceof String) ? String.format("\"%s\"", value) : value)
-                    .append("; ");
-        }
-
-        builder.setLength(builder.length() - 2);
-
-        return "[" + builder + "]";
+        return Pretty.format(parameters);
     }
 }

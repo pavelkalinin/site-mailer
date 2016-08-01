@@ -22,3 +22,4 @@ access.properties
 
 # Release
 /src/test/
+pom.xml

@@ -65,10 +65,10 @@ public class Configuration {
     @Override
     public String toString() {
         return String.format("[" +
-                        "service.debug.mode=%b; " +
-                        "service.handler=\"%s\"; " +
-                        "service.port=%d; " +
-                        "recipient.address=\"%s\"; " +
+                        DEBUG + "=%b; " +
+                        HANDLER + "=\"%s\"; " +
+                        PORT + "=%d; " +
+                        RECIPIENT + "=\"%s\"; " +
                         "smtp.server=%s]",
                 isDebugMode(),
                 serviceHandler(),
