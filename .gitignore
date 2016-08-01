@@ -1,7 +1,5 @@
 # Package Files
 *.jar
-*.war
-*.ear
 
 # IntelliJ
 *.iml
@@ -12,14 +10,10 @@
 /target/
 
 # Log4j
-# log4j.properties
+log4j.properties
 
 # Private
 access.properties
 
 # System
 *.DS_Store
-
-# Release
-/src/test/
-pom.xml
