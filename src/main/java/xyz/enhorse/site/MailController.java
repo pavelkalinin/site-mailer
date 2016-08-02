@@ -18,13 +18,15 @@ import java.nio.charset.StandardCharsets;
 public class MailController extends HttpServlet {
 
     private final MailService service;
-    private final String redirectTo;
+    private final String redirectToSuccess;
+    private final String redirectToFail;
 
 
     public MailController(final Configuration configuration) {
         Validate.notNull("configuration for mail controller", configuration);
         service = new MailService(configuration.smtpServer(), configuration.recipient());
-        redirectTo = Validate.notNull("redirect to URL", configuration.redirectTo());
+        redirectToSuccess = Validate.notNull("redirect to if success URL", configuration.redirectToSuccess());
+        redirectToFail = Validate.notNull("redirect to if fail URL", configuration.redirectToFail());
     }
 
 
@@ -34,10 +36,10 @@ public class MailController extends HttpServlet {
         try {
             MailMessage mail = generateMail(request);
             service.sendMail(mail);
-            response.sendRedirect(redirectTo);
+            response.sendRedirect(redirectToSuccess);
             response.setStatus(HttpServletResponse.SC_ACCEPTED);
         } catch (Exception ex) {
-            response.getWriter().append(ex.getMessage());
+            response.sendRedirect(redirectToFail);
             response.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
         }
     }

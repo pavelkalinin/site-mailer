@@ -19,7 +19,8 @@ public class Configuration {
     private static final String HANDLER = "service.handler";
     private static final String PORT = "service.port";
     private static final String RECIPIENT = "recipient.email";
-    private static final String REDIRECT_TO = "redirect.to";
+    private static final String REDIRECT_TO_SUCCESS = "redirect.to.success";
+    private static final String REDIRECT_TO_FAIL = "redirect.to.fail";
 
     private static final int PRIVATE_PORTS_MINIMAL = 49152;
     private static final int PRIVATE_PORTS_MAXIMAL = 65535;
@@ -32,7 +33,8 @@ public class Configuration {
     private int port;
     private String recipient;
     private SMTPServer smtpServer;
-    private String redirectTo;
+    private String redirectToSuccess;
+    private String redirectToFail;
 
 
     private Configuration(final Properties properties) {
@@ -61,8 +63,13 @@ public class Configuration {
     }
 
 
-    public String redirectTo() {
-        return redirectTo;
+    public String redirectToSuccess() {
+        return redirectToSuccess;
+    }
+
+
+    public String redirectToFail() {
+        return redirectToFail;
     }
 
 
@@ -92,7 +99,8 @@ public class Configuration {
         handler = readServiceHandler();
         port = readServicePort();
         recipient = readRecipientEmail();
-        redirectTo = readRedirectTo();
+        redirectToSuccess = readRedirectToSuccess();
+        redirectToFail = readRedirectToFail();
         smtpServer = new SMTPServer(new SMTPConfiguration(parameters));
     }
 
@@ -121,8 +129,13 @@ public class Configuration {
     }
 
 
-    private String readRedirectTo() {
-        return Validate.defaultIfNull(parameters.getProperty(REDIRECT_TO), DEFAULT_REDIRECT_TO);
+    private String readRedirectToSuccess() {
+        return Validate.defaultIfNull(parameters.getProperty(REDIRECT_TO_SUCCESS), DEFAULT_REDIRECT_TO);
+    }
+
+
+    private String readRedirectToFail() {
+        return Validate.defaultIfNull(parameters.getProperty(REDIRECT_TO_FAIL), DEFAULT_REDIRECT_TO);
     }
 
 
