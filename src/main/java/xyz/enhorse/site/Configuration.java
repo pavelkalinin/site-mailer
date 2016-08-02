@@ -15,13 +15,16 @@ import java.util.Properties;
  */
 public class Configuration {
 
-    private final static String DEBUG = "service.debug";
-    private final static String HANDLER = "service.handler";
-    private final static String PORT = "service.port";
-    private final static String RECIPIENT = "recipient.email";
+    private static final String DEBUG = "service.debug";
+    private static final String HANDLER = "service.handler";
+    private static final String PORT = "service.port";
+    private static final String RECIPIENT = "recipient.email";
+    private static final String REDIRECT_TO = "redirect.to";
 
-    private final static int PRIVATE_PORTS_MINIMAL = 49152;
-    private final static int PRIVATE_PORTS_MAXIMAL = 65535;
+    private static final int PRIVATE_PORTS_MINIMAL = 49152;
+    private static final int PRIVATE_PORTS_MAXIMAL = 65535;
+
+    private static final String DEFAULT_REDIRECT_TO = "";
 
     private final Properties parameters;
     private boolean debug;
@@ -29,6 +32,7 @@ public class Configuration {
     private int port;
     private String recipient;
     private SMTPServer smtpServer;
+    private String redirectTo;
 
 
     private Configuration(final Properties properties) {
@@ -54,6 +58,11 @@ public class Configuration {
 
     public SMTPServer smtpServer() {
         return smtpServer;
+    }
+
+
+    public String redirectTo() {
+        return redirectTo;
     }
 
 
@@ -83,6 +92,7 @@ public class Configuration {
         handler = readServiceHandler();
         port = readServicePort();
         recipient = readRecipientEmail();
+        redirectTo = readRedirectTo();
         smtpServer = new SMTPServer(new SMTPConfiguration(parameters));
     }
 
@@ -108,6 +118,11 @@ public class Configuration {
 
     private boolean readDebugMode() {
         return Boolean.parseBoolean(parameters.getProperty(DEBUG));
+    }
+
+
+    private String readRedirectTo() {
+        return Validate.defaultIfNull(parameters.getProperty(REDIRECT_TO), DEFAULT_REDIRECT_TO);
     }
 
 
