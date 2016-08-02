@@ -3,7 +3,6 @@ package xyz.enhorse.site.mail;
 import xyz.enhorse.commons.Pretty;
 import xyz.enhorse.commons.Validate;
 
-import java.nio.charset.Charset;
 import java.util.Properties;
 
 import static xyz.enhorse.site.mail.SMTPProperties.*;
@@ -33,7 +32,6 @@ public class SMTPConfiguration {
     private boolean tlsEnabled;
     private SMTPProtocols protocol;
     private String mailer;
-    private Charset charset;
     private boolean debug;
 
 
@@ -63,11 +61,6 @@ public class SMTPConfiguration {
     }
 
 
-    public String charset() {
-        return charset.name();
-    }
-
-
     public String mailer() {
         return mailer;
     }
@@ -84,7 +77,6 @@ public class SMTPConfiguration {
         properties.put(AUTH.of(protocol), authRequired);
         properties.put(SSL.of(protocol), sslEnabled);
         properties.put(TLS.of(protocol), tlsEnabled);
-        properties.put(CHARSET.of(protocol), charset.name());
         properties.put(PROTOCOL.of(protocol), protocol.tag());
         properties.put(MAILER.of(protocol), mailer);
         properties.put(DEBUG.of(protocol), String.valueOf(debug)); // javax.mail.Session counts on to find String
@@ -102,7 +94,6 @@ public class SMTPConfiguration {
         authRequired = readAuthorization();
         sslEnabled = readSSL();
         tlsEnabled = readTLS();
-        charset = readCharset();
         protocol = defineProtocol();
         mailer = readMailer();
         debug = readDebug();
@@ -163,15 +154,6 @@ public class SMTPConfiguration {
             return Boolean.parseBoolean(parameters.getProperty(TLS.property()));
         } catch (Exception ex) {
             return DEFAULT_TLS;
-        }
-    }
-
-
-    private Charset readCharset() {
-        try {
-            return Charset.forName(parameters.getProperty(CHARSET.property()));
-        } catch (Exception ex) {
-            return Charset.defaultCharset();
         }
     }
 

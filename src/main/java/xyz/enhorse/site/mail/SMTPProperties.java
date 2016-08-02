@@ -70,12 +70,6 @@ public enum SMTPProperties {
         public String of(final SMTPProtocols protocol) {
             return "mail.transport.protocol";
         }
-    },
-    CHARSET("smtp.charset") {
-        @Override
-        public String of(final SMTPProtocols protocol) {
-            return "mail.charset";
-        }
     };
 
 

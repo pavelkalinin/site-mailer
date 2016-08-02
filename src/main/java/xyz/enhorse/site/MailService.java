@@ -46,10 +46,10 @@ public class MailService {
         MimeMessage mimeMessage = new MimeMessage(session);
 
         try {
-            Address from = from(message.name(), message.email());
+            Address from = from(message);
             mimeMessage.setFrom(from);
-            mimeMessage.setSubject(message.subject(), server.charset());
-            mimeMessage.setText(message.content(), server.charset());
+            mimeMessage.setSubject(message.subject(), message.charset());
+            mimeMessage.setText(message.content(), message.charset());
             mimeMessage.setSender(sender());
             mimeMessage.setReplyTo(new Address[]{from});
             mimeMessage.setHeader("X-Mailer", server.title());
@@ -84,11 +84,11 @@ public class MailService {
     }
 
 
-    private Address from(final String name, final String address) {
+    private Address from(final MailMessage message) {
         try {
-            return new InternetAddress(address, name, server.charset());
+            return new InternetAddress(message.email(), message.name(), message.charset());
         } catch (UnsupportedEncodingException ex) {
-            throw new IllegalArgumentException("Illegal \'from:\' address: \'" + address + "\'", ex);
+            throw new IllegalArgumentException("Illegal \'from:\' address: \'" + message.email() + "\'", ex);
         }
     }
 }

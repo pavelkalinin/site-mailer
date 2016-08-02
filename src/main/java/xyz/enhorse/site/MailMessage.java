@@ -2,6 +2,8 @@ package xyz.enhorse.site;
 
 import xyz.enhorse.commons.Validate;
 
+import java.nio.charset.Charset;
+
 /**
  * @author <a href="mailto:pavel13kalinin@gmail.com">Pavel Kalinin</a>
  *         27.07.2016
@@ -12,13 +14,19 @@ public class MailMessage {
     private final String email;
     private final String subject;
     private final String content;
+    private final String charset;
 
 
-    private MailMessage(final String name, final String email, final String subject, final String content) {
+    private MailMessage(final String name,
+                        final String email,
+                        final String subject,
+                        final String content,
+                        final String charset) {
         this.name = Validate.required("name", name);
         this.email = Validate.required("email", email);
         this.subject = Validate.required("subject", subject);
         this.content = Validate.required("content", content);
+        this.charset = Validate.defaultIfNullOrEmpty(charset, Charset.defaultCharset().name());
     }
 
 
@@ -39,6 +47,11 @@ public class MailMessage {
 
     public String content() {
         return content;
+    }
+
+
+    public String charset() {
+        return charset;
     }
 
 
@@ -80,6 +93,7 @@ public class MailMessage {
         private String email;
         private String subject;
         private String message;
+        private String charset;
 
 
         public Builder() {
@@ -110,8 +124,14 @@ public class MailMessage {
         }
 
 
+        public Builder setCharset(final String charset) {
+            this.charset = charset;
+            return this;
+        }
+
+
         public MailMessage build() {
-            return new MailMessage(name, email, subject, message);
+            return new MailMessage(name, email, subject, message, charset);
         }
     }
 }

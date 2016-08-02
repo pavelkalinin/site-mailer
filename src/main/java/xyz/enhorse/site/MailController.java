@@ -8,6 +8,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author <a href="mailto:pavel13kalinin@gmail.com">Pavel Kalinin</a>
@@ -44,13 +46,13 @@ public class MailController extends HttpServlet {
     private MailMessage generateMail(final HttpServletRequest request) {
         Validate.notNull("request", request);
 
+        String charset = Validate.defaultIfNull(request.getCharacterEncoding(), StandardCharsets.UTF_8.name());
         String name = "";
         String email = "";
         String subject = "";
         StringBuilder content = new StringBuilder();
 
-        try {
-            BufferedReader reader = request.getReader();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream(), charset))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("name=")) {
@@ -74,6 +76,7 @@ public class MailController extends HttpServlet {
                 .addEmail(email)
                 .addSubject(subject)
                 .addMessage(content.toString())
+                .setCharset(charset)
                 .build();
     }
 

@@ -72,8 +72,8 @@ public class SMTPTransport {
         } catch (Exception ex) {
             builder.append((builder.length() == 0)
                     ? String.format("Can't convert message%n")
-                    : String.format("%n...failed to convert message%n"));
-            builder.append(ex.getMessage());
+                    : String.format("%n...failed to convert message with the error: \'"));
+            builder.append(ex.getMessage()).append('\'');
         }
         return builder.toString();
     }

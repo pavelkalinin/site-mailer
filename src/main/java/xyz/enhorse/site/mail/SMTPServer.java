@@ -19,11 +19,6 @@ public class SMTPServer {
     }
 
 
-    public String charset() {
-        return configuration.charset();
-    }
-
-
     public String sender() {
         return configuration.sender();
     }
