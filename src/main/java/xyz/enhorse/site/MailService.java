@@ -25,15 +25,21 @@ public class MailService {
 
     private final SMTPServer server;
     private final Address recipient;
+    private final String sender;
 
 
-    public MailService(final SMTPServer server, final String recipient) {
-        this.server = Validate.notNull("smtp server for mail service", server);
-        this.recipient = recipient(Validate.notNull("recipient for mail service", recipient));
+    public MailService(final Configuration configuration) {
+        Validate.notNull("configuration", configuration);
+
+        this.server = Validate.notNull("smtp server for mail service", configuration.smtpServer());
+        this.recipient = recipient(Validate.notNull("recipient for mail service", configuration.recipient()));
+        this.sender = Validate.notNullOrEmpty("sender for mail service", configuration.sender());
     }
 
 
     public void sendMail(final MailMessage mail) {
+        Validate.notNull("mail message", mail);
+
         Session session = server.createSession();
         MimeMessage message = mimeMessage(session, mail);
         SMTPTransport transport = new SMTPTransport(session);
@@ -49,16 +55,16 @@ public class MailService {
             Address from = from(message);
             mimeMessage.setFrom(from);
             mimeMessage.setSubject(message.subject(), message.charset());
-            mimeMessage.setText(message.content(), message.charset());
-            mimeMessage.setSender(sender());
-            mimeMessage.setReplyTo(new Address[]{from});
+            mimeMessage.setText(content(message), message.charset());
+            mimeMessage.setReplyTo(replyTo(message));
             mimeMessage.setHeader("X-Mailer", server.title());
             mimeMessage.addRecipient(Message.RecipientType.TO, recipient);
             mimeMessage.saveChanges();
         } catch (MessagingException ex) {
             throw new IllegalStateException("Failed to generate a MIME message " +
                     "from the message \'" + message + "\' " +
-                    "to the recipientAddress \'" + recipient + "\' " +
+                    "to the recipient \'" + recipient + "\' " +
+                    "by sender \'" + sender + "\' " +
                     "during the session + \'" + session + "\' ", ex);
         }
 
@@ -66,29 +72,34 @@ public class MailService {
     }
 
 
-    private Address recipient(final String recipient) {
+    private Address recipient(final String address) {
         try {
-            return new InternetAddress(recipient);
+            return new InternetAddress(address);
         } catch (AddressException ex) {
-            throw new IllegalArgumentException("Illegal recipient address: \'" + recipient + "\'", ex);
-        }
-    }
-
-
-    private Address sender() {
-        try {
-            return new InternetAddress(server.sender());
-        } catch (AddressException ex) {
-            return null;
+            throw new IllegalArgumentException("Illegal recipient address: \'" + address + "\'", ex);
         }
     }
 
 
     private Address from(final MailMessage message) {
         try {
-            return new InternetAddress(message.email(), message.name(), message.charset());
+            return new InternetAddress(sender, message.name(), message.charset());
         } catch (UnsupportedEncodingException ex) {
-            throw new IllegalArgumentException("Illegal \'from:\' address: \'" + message.email() + "\'", ex);
+            throw new IllegalArgumentException("Illegal sender address: \'" + sender + "\'", ex);
         }
+    }
+
+
+    private Address[] replyTo(final MailMessage message) {
+        try {
+            return new Address[]{new InternetAddress(message.email(), message.name(), message.charset())};
+        } catch (UnsupportedEncodingException ex) {
+            throw new IllegalArgumentException("Illegal \'From:\' address: \'" + message.email() + "\'", ex);
+        }
+    }
+
+
+    private String content(final MailMessage message) {
+        return String.format("%s%n%s<%s>", message.content(), message.name(), message.email());
     }
 }

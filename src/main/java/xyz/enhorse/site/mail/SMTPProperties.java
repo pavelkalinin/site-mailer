@@ -17,12 +17,6 @@ public enum SMTPProperties {
             return "mail." + protocol.tag() + ".port";
         }
     },
-    SENDER("smtp.sender") {
-        @Override
-        public String of(final SMTPProtocols protocol) {
-            return "mail." + protocol.tag() + ".sender";
-        }
-    },
     USER("smtp.user") {
         @Override
         public String of(final SMTPProtocols protocol) {

@@ -24,7 +24,6 @@ public class SMTPConfiguration {
 
     private String host;
     private int port;
-    private String sender;
     private String user;
     private String password;
     private boolean authRequired;
@@ -56,11 +55,6 @@ public class SMTPConfiguration {
     }
 
 
-    public String sender() {
-        return sender;
-    }
-
-
     public String mailer() {
         return mailer;
     }
@@ -71,7 +65,6 @@ public class SMTPConfiguration {
 
         properties.put(HOST.of(protocol), host);
         properties.put(PORT.of(protocol), port);
-        properties.put(SENDER.of(protocol), sender);
         properties.put(USER.of(protocol), user);
         properties.put(PASSWORD.of(protocol), password);
         properties.put(AUTH.of(protocol), authRequired);
@@ -88,7 +81,6 @@ public class SMTPConfiguration {
     private void setup() {
         host = readHost();
         port = readPort();
-        sender = readSender();
         user = readUser();
         password = readPassword();
         authRequired = readAuthorization();
@@ -113,11 +105,6 @@ public class SMTPConfiguration {
             return defineProtocol().port();
         }
 
-    }
-
-
-    private String readSender() {
-        return parameters.getProperty(SENDER.property(), readUser());
     }
 
 

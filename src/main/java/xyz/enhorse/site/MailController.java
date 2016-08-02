@@ -22,7 +22,7 @@ public class MailController extends HttpServlet {
 
     public MailController(final Configuration configuration) {
         Validate.notNull("configuration for mail controller", configuration);
-        service = new MailService(configuration.smtpServer(), configuration.recipient());
+        service = new MailService(configuration);
         redirectToSuccess = Validate.notNull("redirect to if success URL", configuration.redirectToSuccess());
         redirectToFail = Validate.notNull("redirect to if fail URL", configuration.redirectToFail());
     }

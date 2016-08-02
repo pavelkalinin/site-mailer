@@ -19,6 +19,7 @@ public class Configuration {
     private static final String HANDLER = "service.handler";
     private static final String PORT = "service.port";
     private static final String RECIPIENT = "recipient.email";
+    private static final String SENDER = "sender.email";
     private static final String REDIRECT_TO_SUCCESS = "redirect.to.success";
     private static final String REDIRECT_TO_FAIL = "redirect.to.fail";
 
@@ -32,6 +33,7 @@ public class Configuration {
     private String handler;
     private int port;
     private String recipient;
+    private String sender;
     private SMTPServer smtpServer;
     private String redirectToSuccess;
     private String redirectToFail;
@@ -55,6 +57,11 @@ public class Configuration {
 
     public String recipient() {
         return recipient;
+    }
+
+
+    public String sender() {
+        return sender;
     }
 
 
@@ -85,11 +92,17 @@ public class Configuration {
                         HANDLER + "=\"%s\"; " +
                         PORT + "=%d; " +
                         RECIPIENT + "=\"%s\"; " +
+                        SENDER + "=\"%s\"; " +
+                        REDIRECT_TO_SUCCESS + "=\"%s\"; " +
+                        REDIRECT_TO_FAIL + "=\"%s\"; " +
                         "smtp.server=%s]",
                 isDebugMode(),
                 serviceHandler(),
                 servicePort(),
                 recipient(),
+                sender(),
+                redirectToSuccess(),
+                redirectToFail(),
                 smtpServer());
     }
 
@@ -99,6 +112,7 @@ public class Configuration {
         handler = readServiceHandler();
         port = readServicePort();
         recipient = readRecipientEmail();
+        sender = readSenderEmail();
         redirectToSuccess = readRedirectToSuccess();
         redirectToFail = readRedirectToFail();
         smtpServer = new SMTPServer(new SMTPConfiguration(parameters));
@@ -120,6 +134,12 @@ public class Configuration {
 
     private String readRecipientEmail() {
         String property = RECIPIENT;
+        return Validate.required(property, parameters.getProperty(property));
+    }
+
+
+    private String readSenderEmail() {
+        String property = SENDER;
         return Validate.required(property, parameters.getProperty(property));
     }
 

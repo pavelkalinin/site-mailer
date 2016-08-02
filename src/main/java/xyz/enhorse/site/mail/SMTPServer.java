@@ -19,11 +19,6 @@ public class SMTPServer {
     }
 
 
-    public String sender() {
-        return configuration.sender();
-    }
-
-
     public Session createSession() {
         return Session.getInstance(configuration.get(), authenticator());
     }
