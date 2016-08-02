@@ -6,9 +6,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -49,43 +47,17 @@ public class MailController extends HttpServlet {
         Validate.notNull("request", request);
 
         String charset = Validate.defaultIfNull(request.getCharacterEncoding(), StandardCharsets.UTF_8.name());
-        String name = "";
-        String email = "";
-        String subject = "";
-        StringBuilder content = new StringBuilder();
-
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream(), charset))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.startsWith("name=")) {
-                    name = extractParameterValue(line);
-                } else if (line.startsWith("email=")) {
-                    email = extractParameterValue(line);
-                } else if (line.startsWith("subject=")) {
-                    subject = extractParameterValue(line);
-                } else if (line.startsWith("content=")) {
-                    content.append(extractParameterValue(line)).append(System.lineSeparator());
-                } else {
-                    content.append(line).append(System.lineSeparator());
-                }
-            }
-        } catch (IOException ex) {
-            throw new IllegalStateException("Can't parse a message from the request\'" + request + "\'");
-        }
+        String name = request.getParameter("name");
+        String email = request.getParameter("email");
+        String subject = request.getParameter("subject");
+        String content = request.getParameter("content");
 
         return new MailMessage.Builder()
                 .addName(name)
                 .addEmail(email)
                 .addSubject(subject)
-                .addMessage(content.toString())
+                .addMessage(content)
                 .setCharset(charset)
                 .build();
     }
-
-
-    private String extractParameterValue(final String line) {
-        int index = line.indexOf('=');
-        return line.substring(index + 1);
-    }
-
 }
