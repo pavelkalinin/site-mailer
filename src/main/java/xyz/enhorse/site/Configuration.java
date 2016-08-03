@@ -1,6 +1,6 @@
 package xyz.enhorse.site;
 
-import xyz.enhorse.commons.HandyPath;
+import xyz.enhorse.commons.PathEx;
 import xyz.enhorse.commons.Validate;
 import xyz.enhorse.site.mail.SMTPConfiguration;
 import xyz.enhorse.site.mail.SMTPServer;
@@ -160,7 +160,7 @@ public class Configuration {
 
 
     public static Configuration loadFromFile(final String filename) {
-        HandyPath file = new HandyPath(Validate.notNull("configuration file filename", filename));
+        PathEx file = new PathEx(Validate.notNull("configuration file filename", filename));
         if (!file.isExistingFile()) {
             throw new IllegalArgumentException("Configuration file \'" + filename + "\' doesn't exist.");
         }
