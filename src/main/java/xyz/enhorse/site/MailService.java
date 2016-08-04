@@ -31,9 +31,9 @@ public class MailService {
     public MailService(final Configuration configuration) {
         Validate.notNull("configuration", configuration);
 
-        this.server = Validate.notNull("smtp server for mail service", configuration.smtpServer());
-        this.recipient = recipient(Validate.notNull("recipient for mail service", configuration.recipient()));
-        this.sender = Validate.notNullOrEmpty("sender for mail service", configuration.sender());
+        server = Validate.notNull("smtp server for mail service", configuration.smtpServer());
+        recipient = recipient(Validate.notNull("recipient for mail service", configuration.recipientAddress()));
+        sender = Validate.notNullOrEmpty("sender for mail service", configuration.senderAddress());
     }
 
 
@@ -42,9 +42,7 @@ public class MailService {
 
         Session session = server.createSession();
         MimeMessage message = mimeMessage(session, mail);
-        SMTPTransport transport = new SMTPTransport(session);
-
-        transport.sendMessage(message);
+        new SMTPTransport(session).sendMessage(message);
     }
 
 
@@ -54,11 +52,11 @@ public class MailService {
         try {
             Address from = from(message);
             mimeMessage.setFrom(from);
-            mimeMessage.setSubject(message.subject(), message.charset());
-            mimeMessage.setText(content(message), message.charset());
+            mimeMessage.setSubject(message.subject(), message.encoding());
+            mimeMessage.setText(message.content(), message.encoding());
+            mimeMessage.addRecipient(Message.RecipientType.TO, recipient);
             mimeMessage.setReplyTo(replyTo(message));
             mimeMessage.setHeader("X-Mailer", server.title());
-            mimeMessage.addRecipient(Message.RecipientType.TO, recipient);
             mimeMessage.saveChanges();
         } catch (MessagingException ex) {
             throw new IllegalStateException("Failed to generate a MIME message " +
@@ -83,7 +81,7 @@ public class MailService {
 
     private Address from(final MailMessage message) {
         try {
-            return new InternetAddress(sender, message.name(), message.charset());
+            return new InternetAddress(sender, message.name(), message.encoding());
         } catch (UnsupportedEncodingException ex) {
             throw new IllegalArgumentException("Illegal sender address: \'" + sender + "\'", ex);
         }
@@ -92,14 +90,9 @@ public class MailService {
 
     private Address[] replyTo(final MailMessage message) {
         try {
-            return new Address[]{new InternetAddress(message.email(), message.name(), message.charset())};
+            return new Address[]{new InternetAddress(message.address(), message.name(), message.encoding())};
         } catch (UnsupportedEncodingException ex) {
-            throw new IllegalArgumentException("Illegal \'From:\' address: \'" + message.email() + "\'", ex);
+            throw new IllegalArgumentException("Illegal \'From:\' address: \'" + message.address() + "\'", ex);
         }
-    }
-
-
-    private String content(final MailMessage message) {
-        return String.format("%s%n%s<%s>", message.content(), message.name(), message.email());
     }
 }
