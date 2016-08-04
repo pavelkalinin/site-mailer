@@ -25,7 +25,6 @@ public class Configuration {
     private static final String REDIRECT_TO_FAIL = "redirect.fail";
 
     private static final String DEFAULT_ADMIN = "";
-    private static final String DEFAULT_SENDER = "";
     private static final String DEFAULT_REDIRECT = "";
 
     private static final int PRIVATE_PORTS_MINIMAL = 49152;
@@ -151,7 +150,7 @@ public class Configuration {
 
 
     private String readSender() {
-        return Validate.defaultIfNull(parameters.getProperty(SENDER), DEFAULT_SENDER);
+        return Validate.defaultIfNull(parameters.getProperty(SENDER), readRecipient());
     }
 
 
