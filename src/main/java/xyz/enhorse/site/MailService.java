@@ -92,7 +92,7 @@ public class MailService {
         try {
             return new Address[]{new InternetAddress(message.address(), message.name(), message.encoding())};
         } catch (UnsupportedEncodingException ex) {
-            throw new IllegalArgumentException("Illegal \'From:\' address: \'" + message.address() + "\'", ex);
+            return new Address[]{};
         }
     }
 }
