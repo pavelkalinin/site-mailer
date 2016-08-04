@@ -24,36 +24,32 @@ import java.io.UnsupportedEncodingException;
 public class MailService {
 
     private final SMTPServer server;
-    private final String emailTo;
-    private final String emailFrom;
+    private final String from;
 
 
-    public MailService(final Configuration configuration) {
-        Validate.notNull("configuration", configuration);
-
-        server = Validate.notNull("smtp server for mail service", configuration.smtpServer());
-        emailTo = Validate.notNull("recipient of mail service", configuration.emailTo());
-        emailFrom = Validate.notNullOrEmpty("sender of mail service", configuration.emailFrom());
+    public MailService(final SMTPServer smtpServer, final String emailFrom) {
+        server = Validate.notNull("smtp server for mail service", smtpServer);
+        from = Validate.notNullOrEmpty("sender's email", emailFrom);
     }
 
 
-    public void sendMail(final MailMessage mail) {
+    public void sendMail(final String to, final MailMessage mail) {
         Validate.notNull("mail message", mail);
 
         Session session = server.createSession();
-        MimeMessage message = mimeMessage(session, mail);
+        MimeMessage message = mimeMessage(to, mail, session);
         new SMTPTransport(session).sendMessage(message);
     }
 
 
-    private MimeMessage mimeMessage(final Session session, final MailMessage message) {
+    private MimeMessage mimeMessage(final String to, final MailMessage message, final Session session) {
         MimeMessage mimeMessage = new MimeMessage(session);
 
         try {
-            mimeMessage.setFrom(address(emailFrom, message));
+            mimeMessage.setFrom(address(from, message));
             mimeMessage.setSubject(message.subject(), message.encoding());
             mimeMessage.setText(message.content(), message.encoding());
-            mimeMessage.addRecipient(Message.RecipientType.TO, address(emailTo));
+            mimeMessage.addRecipient(Message.RecipientType.TO, address(to));
             mimeMessage.setSender(address(message));
             mimeMessage.setReplyTo(new Address[]{address(message)});
             mimeMessage.setHeader("X-Mailer", server.title());
@@ -61,8 +57,8 @@ public class MailService {
         } catch (MessagingException ex) {
             throw new IllegalStateException("Failed to generate a MIME message " +
                     "from message \'" + message + "\' " +
-                    "to recipient \'" + emailTo + "\' " +
-                    "by sender \'" + emailFrom + "\' " +
+                    "to recipient \'" + to + "\' " +
+                    "by sender \'" + from + "\' " +
                     "during session + \'" + session + "\' ", ex);
         }
 

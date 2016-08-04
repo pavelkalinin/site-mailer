@@ -30,12 +30,14 @@ public class MailController extends HttpServlet {
     private final MailService service;
     private final Configuration config;
     private final String admin;
+    private final String recipient;
 
 
     public MailController(final Configuration configuration) {
-        config = Validate.notNull("configuration for mail controller", configuration);
-        service = new MailService(configuration);
-        admin = Validate.defaultIfNull(configuration.emailAdmin(), "admin's email address");
+        config = configuration;
+        service = new MailService(configuration.smtpServer(), configuration.emailFrom());
+        recipient = configuration.emailTo();
+        admin = configuration.emailAdmin();
     }
 
 
@@ -44,11 +46,11 @@ public class MailController extends HttpServlet {
             throws ServletException, IOException {
         try {
             MailMessage mail = generateMail(request);
-            service.sendMail(mail);
+            service.sendMail(recipient, mail);
             response.sendRedirect(checkRedirect(request.getParameter(FORM_SUCCESS)));
             response.setStatus(HttpServletResponse.SC_ACCEPTED);
         } catch (Exception ex) {
-            service.sendMail(generateMailToAdmin(ex));
+            service.sendMail(admin, generateMailToAdmin(ex));
             response.sendRedirect(checkRedirect(request.getParameter(FORM_FAIL)));
             response.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
         }
@@ -61,6 +63,7 @@ public class MailController extends HttpServlet {
         String email = request.getParameter(FORM_EMAIL);
         String subject = request.getParameter(FORM_SUBJECT);
         String content = request.getParameter(FORM_CONTENT);
+        if (email.equals("test")) throw new IllegalArgumentException("super error");
         return new MailMessage.Builder()
                 .setName(name)
                 .setAddress(email)
