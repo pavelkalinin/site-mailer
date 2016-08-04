@@ -18,14 +18,9 @@ public class Configuration {
     private static final String DEBUG = "service.debug";
     private static final String HANDLER = "service.handler";
     private static final String PORT = "service.port";
-    private static final String RECIPIENT = "email.recipient";
-    private static final String SENDER = "email.sender";
-    private static final String ADMIN = "email.admin";
-    private static final String REDIRECT_TO_SUCCESS = "redirect.success";
-    private static final String REDIRECT_TO_FAIL = "redirect.fail";
-
-    private static final String DEFAULT_ADMIN = "";
-    private static final String DEFAULT_REDIRECT = "";
+    private static final String EMAIL_TO = "email.to";
+    private static final String EMAIL_FROM = "email.from";
+    private static final String EMAIL_ADMIN = "email.admin";
 
     private static final int PRIVATE_PORTS_MINIMAL = 49152;
     private static final int PRIVATE_PORTS_MAXIMAL = 65535;
@@ -34,12 +29,10 @@ public class Configuration {
     private boolean debug;
     private String handler;
     private int port;
-    private String recipient;
-    private String sender;
+    private String to;
+    private String from;
     private String admin;
     private SMTPServer smtpServer;
-    private String redirectSuccess;
-    private String redirectFail;
 
 
     private Configuration(final Properties properties) {
@@ -58,33 +51,23 @@ public class Configuration {
     }
 
 
-    public String recipientAddress() {
-        return recipient;
+    public String emailTo() {
+        return to;
     }
 
 
-    public String senderAddress() {
-        return sender;
+    public String emailFrom() {
+        return from;
     }
 
 
-    public String adminAddress() {
+    public String emailAdmin() {
         return admin;
     }
 
 
     public SMTPServer smtpServer() {
         return smtpServer;
-    }
-
-
-    public String redirectToSuccess() {
-        return redirectSuccess;
-    }
-
-
-    public String redirectToFail() {
-        return redirectFail;
     }
 
 
@@ -99,20 +82,16 @@ public class Configuration {
                         DEBUG + "=%b; " +
                         HANDLER + "=\"%s\"; " +
                         PORT + "=%d; " +
-                        RECIPIENT + "=\"%s\"; " +
-                        SENDER + "=\"%s\"; " +
-                        ADMIN + "=\"%s\"; " +
-                        REDIRECT_TO_SUCCESS + "=\"%s\"; " +
-                        REDIRECT_TO_FAIL + "=\"%s\"; " +
+                        EMAIL_TO + "=\"%s\"; " +
+                        EMAIL_FROM + "=\"%s\"; " +
+                        EMAIL_ADMIN + "=\"%s\"; " +
                         "smtp.server=%s]",
                 isDebugMode(),
                 serviceHandler(),
                 servicePort(),
-                recipientAddress(),
-                senderAddress(),
-                adminAddress(),
-                redirectToSuccess(),
-                redirectToFail(),
+                emailTo(),
+                emailFrom(),
+                emailAdmin(),
                 smtpServer());
     }
 
@@ -121,11 +100,9 @@ public class Configuration {
         debug = readDebug();
         handler = readHandler();
         port = readPort();
-        recipient = readRecipient();
-        sender = readSender();
-        admin = readAdmin();
-        redirectSuccess = readRedirectSuccess();
-        redirectFail = readRedirectFail();
+        to = readEmailTo();
+        from = readEmailFrom();
+        admin = readEmailAdmin();
         smtpServer = new SMTPServer(new SMTPConfiguration(parameters));
     }
 
@@ -143,34 +120,24 @@ public class Configuration {
     }
 
 
-    private String readRecipient() {
-        String property = RECIPIENT;
+    private String readEmailTo() {
+        String property = EMAIL_TO;
         return Validate.required(property, parameters.getProperty(property));
     }
 
 
-    private String readSender() {
-        return Validate.defaultIfNull(parameters.getProperty(SENDER), readRecipient());
+    private String readEmailFrom() {
+        return Validate.defaultIfNull(parameters.getProperty(EMAIL_FROM), readEmailTo());
     }
 
 
-    private String readAdmin() {
-        return Validate.required(parameters.getProperty(ADMIN), DEFAULT_ADMIN);
+    private String readEmailAdmin() {
+        return Validate.defaultIfNull(parameters.getProperty(EMAIL_ADMIN), readEmailTo());
     }
 
 
     private boolean readDebug() {
         return Boolean.parseBoolean(parameters.getProperty(DEBUG));
-    }
-
-
-    private String readRedirectSuccess() {
-        return Validate.defaultIfNull(parameters.getProperty(REDIRECT_TO_SUCCESS), DEFAULT_REDIRECT);
-    }
-
-
-    private String readRedirectFail() {
-        return Validate.defaultIfNull(parameters.getProperty(REDIRECT_TO_FAIL), DEFAULT_REDIRECT);
     }
 
 

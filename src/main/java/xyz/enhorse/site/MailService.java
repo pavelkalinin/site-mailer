@@ -24,16 +24,16 @@ import java.io.UnsupportedEncodingException;
 public class MailService {
 
     private final SMTPServer server;
-    private final Address recipient;
-    private final String sender;
+    private final String emailTo;
+    private final String emailFrom;
 
 
     public MailService(final Configuration configuration) {
         Validate.notNull("configuration", configuration);
 
         server = Validate.notNull("smtp server for mail service", configuration.smtpServer());
-        recipient = recipient(Validate.notNull("recipient for mail service", configuration.recipientAddress()));
-        sender = Validate.notNullOrEmpty("sender for mail service", configuration.senderAddress());
+        emailTo = Validate.notNull("recipient of mail service", configuration.emailTo());
+        emailFrom = Validate.notNullOrEmpty("sender of mail service", configuration.emailFrom());
     }
 
 
@@ -50,49 +50,49 @@ public class MailService {
         MimeMessage mimeMessage = new MimeMessage(session);
 
         try {
-            Address from = from(message);
-            mimeMessage.setFrom(from);
+            mimeMessage.setFrom(address(emailFrom, message));
             mimeMessage.setSubject(message.subject(), message.encoding());
             mimeMessage.setText(message.content(), message.encoding());
-            mimeMessage.addRecipient(Message.RecipientType.TO, recipient);
-            mimeMessage.setReplyTo(replyTo(message));
+            mimeMessage.addRecipient(Message.RecipientType.TO, address(emailTo));
+            mimeMessage.setSender(address(message));
+            mimeMessage.setReplyTo(new Address[]{address(message)});
             mimeMessage.setHeader("X-Mailer", server.title());
             mimeMessage.saveChanges();
         } catch (MessagingException ex) {
             throw new IllegalStateException("Failed to generate a MIME message " +
-                    "from the message \'" + message + "\' " +
-                    "to the recipient \'" + recipient + "\' " +
-                    "by sender \'" + sender + "\' " +
-                    "during the session + \'" + session + "\' ", ex);
+                    "from message \'" + message + "\' " +
+                    "to recipient \'" + emailTo + "\' " +
+                    "by sender \'" + emailFrom + "\' " +
+                    "during session + \'" + session + "\' ", ex);
         }
 
         return mimeMessage;
     }
 
 
-    private Address recipient(final String address) {
+    private Address address(final String address) {
         try {
             return new InternetAddress(address);
         } catch (AddressException ex) {
-            throw new IllegalArgumentException("Illegal recipient address: \'" + address + "\'", ex);
+            throw new IllegalArgumentException("Illegal address: \'" + address + "\'", ex);
         }
     }
 
 
-    private Address from(final MailMessage message) {
+    private Address address(final String address, final MailMessage message) {
         try {
-            return new InternetAddress(sender, message.name(), message.encoding());
+            return new InternetAddress(address, message.name(), message.encoding());
         } catch (UnsupportedEncodingException ex) {
-            throw new IllegalArgumentException("Illegal sender address: \'" + sender + "\'", ex);
+            return new InternetAddress();
         }
     }
 
 
-    private Address[] replyTo(final MailMessage message) {
+    private Address address(final MailMessage message) {
         try {
-            return new Address[]{new InternetAddress(message.address(), message.name(), message.encoding())};
+            return new InternetAddress(message.address(), message.name(), message.encoding());
         } catch (UnsupportedEncodingException ex) {
-            return new Address[]{};
+            return new InternetAddress();
         }
     }
 }

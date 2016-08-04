@@ -18,24 +18,24 @@ import java.util.Date;
  *         26.07.2016
  */
 public class MailController extends HttpServlet {
-
     private static final String FORM_NAME = "name";
     private static final String FORM_EMAIL = "email";
     private static final String FORM_SUBJECT = "subject";
     private static final String FORM_CONTENT = "content";
+    private static final String FORM_SUCCESS = "success";
+    private static final String FORM_FAIL = "fail";
+
+    private static final String DEFAULT_REDIRECT = "/";
 
     private final MailService service;
-    private final String redirectToSuccess;
-    private final String redirectToFail;
+    private final Configuration config;
     private final String admin;
 
 
     public MailController(final Configuration configuration) {
-        Validate.notNull("configuration for mail controller", configuration);
+        config = Validate.notNull("configuration for mail controller", configuration);
         service = new MailService(configuration);
-        redirectToSuccess = Validate.notNull("redirect to if success URL", configuration.redirectToSuccess());
-        redirectToFail = Validate.notNull("redirect to if fail URL", configuration.redirectToFail());
-        admin = Validate.defaultIfNull("admin's email address", configuration.adminAddress());
+        admin = Validate.defaultIfNull(configuration.emailAdmin(), "admin's email address");
     }
 
 
@@ -45,11 +45,11 @@ public class MailController extends HttpServlet {
         try {
             MailMessage mail = generateMail(request);
             service.sendMail(mail);
-            response.sendRedirect(redirectToSuccess);
+            response.sendRedirect(checkRedirect(request.getParameter(FORM_SUCCESS)));
             response.setStatus(HttpServletResponse.SC_ACCEPTED);
         } catch (Exception ex) {
-            service.sendMail(generateMailToAdmin(ex.getMessage(), stackTraceToString(ex)));
-            response.sendRedirect(redirectToFail);
+            service.sendMail(generateMailToAdmin(ex));
+            response.sendRedirect(checkRedirect(request.getParameter(FORM_FAIL)));
             response.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
         }
     }
@@ -61,25 +61,34 @@ public class MailController extends HttpServlet {
         String email = request.getParameter(FORM_EMAIL);
         String subject = request.getParameter(FORM_SUBJECT);
         String content = request.getParameter(FORM_CONTENT);
-
         return new MailMessage.Builder()
                 .setName(name)
                 .setAddress(email)
                 .setSubject(subject)
                 .setContent(content)
+                .addContent(String.format("%n%naddress to replay: %s <%s>", name, email))
                 .setEncoding(charset)
                 .build();
     }
 
 
-    private MailMessage generateMailToAdmin(final String error, String cause) {
+    private MailMessage generateMailToAdmin(final Exception ex) {
+        Date now = new Date();
         return new MailMessage.Builder()
+                .setName("Mailer")
                 .setAddress(admin)
-                .setSubject("error: " + new Date())
-                .setContent(error)
-                .addContent(System.lineSeparator() + cause)
+                .setSubject("error: " + now)
+                .setContent(String.format("stacktrace:%n%s%n%n", stackTraceToString(ex)))
+                .addContent(String.format("configuration:%n%s%n%n", config))
+                .addContent(String.format("timestamp:%n%s", now))
                 .setEncoding(Charset.defaultCharset().name())
                 .build();
+    }
+
+
+    private String checkRedirect(final String parameter) {
+        //TODO check parameter is valid URL
+        return Validate.defaultIfNull(parameter, DEFAULT_REDIRECT);
     }
 
 
