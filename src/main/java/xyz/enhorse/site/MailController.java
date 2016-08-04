@@ -63,7 +63,6 @@ public class MailController extends HttpServlet {
         String email = request.getParameter(FORM_EMAIL);
         String subject = request.getParameter(FORM_SUBJECT);
         String content = request.getParameter(FORM_CONTENT);
-        if (email.equals("test")) throw new IllegalArgumentException("super error");
         return new MailMessage.Builder()
                 .setName(name)
                 .setAddress(email)
