@@ -1,5 +1,7 @@
 package xyz.enhorse.site;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import xyz.enhorse.commons.PathEx;
 import xyz.enhorse.commons.Validate;
 import xyz.enhorse.site.mail.SMTPConfiguration;
@@ -15,11 +17,13 @@ import java.util.Properties;
  */
 public class Configuration {
 
-    private static final String DEBUG = "service.debug";
+    private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
+
     private static final String HANDLER = "service.handler";
     private static final String PORT = "service.port";
     private static final String EMAIL_TO = "email.to";
     private static final String EMAIL_FROM = "email.from";
+    private static final String DEBUG = "service.debug";
     private static final String EMAIL_ADMIN = "email.admin";
 
     private static final int PRIVATE_PORTS_MINIMAL = 49152;
@@ -73,6 +77,11 @@ public class Configuration {
 
     public boolean isDebugMode() {
         return debug;
+    }
+
+
+    public Logger logger() {
+        return LOGGER;
     }
 
 
