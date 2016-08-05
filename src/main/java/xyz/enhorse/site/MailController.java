@@ -1,5 +1,7 @@
 package xyz.enhorse.site;
 
+import org.slf4j.Logger;
+import xyz.enhorse.commons.Pretty;
 import xyz.enhorse.commons.Validate;
 
 import javax.servlet.ServletException;
@@ -7,8 +9,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -18,6 +19,7 @@ import java.util.Date;
  *         26.07.2016
  */
 public class MailController extends HttpServlet {
+
     private static final String FORM_NAME = "name";
     private static final String FORM_EMAIL = "email";
     private static final String FORM_SUBJECT = "subject";
@@ -27,33 +29,39 @@ public class MailController extends HttpServlet {
 
     private static final String DEFAULT_REDIRECT = "/";
 
-    private final MailService service;
     private final Configuration config;
-    private final String admin;
-    private final String recipient;
+    private final Logger logger;
+    private final MailService service;
 
 
     public MailController(final Configuration configuration) {
         config = configuration;
+        logger = configuration.logger();
         service = new MailService(configuration.smtpServer(), configuration.emailFrom());
-        recipient = configuration.emailTo();
-        admin = configuration.emailAdmin();
     }
 
 
     @Override
     public void doPost(final HttpServletRequest request, final HttpServletResponse response)
-            throws ServletException, IOException {
+            throws ServletException {
+        logger.info(String.format("received %s to send a mail to %s", request, config.emailTo()));
+
         try {
-            MailMessage mail = generateMail(request);
-            service.sendMail(recipient, mail);
+            sendMail(generateMail(request));
             response.sendRedirect(checkRedirect(request.getParameter(FORM_SUCCESS)));
             response.setStatus(HttpServletResponse.SC_ACCEPTED);
         } catch (Exception ex) {
-            service.sendMail(admin, generateMailToAdmin(ex));
-            response.sendRedirect(checkRedirect(request.getParameter(FORM_FAIL)));
-            response.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
+            sendErrorReport(ex);
+            try {
+                response.getWriter().append(ex.getMessage());
+                response.sendRedirect(checkRedirect(request.getParameter(FORM_FAIL)));
+                response.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
+            } catch (IOException iex) {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            }
         }
+
+        logger.info(String.format("%s has been processed: %d", request, response.getStatus()));
     }
 
 
@@ -63,49 +71,66 @@ public class MailController extends HttpServlet {
         String email = request.getParameter(FORM_EMAIL);
         String subject = request.getParameter(FORM_SUBJECT);
         String content = request.getParameter(FORM_CONTENT);
-        //TODO check of form's filling
-        return new MailMessage.Builder()
+        MailMessage mail = new MailMessage.Builder()
                 .setName(name)
                 .setAddress(email)
                 .setSubject(subject)
                 .setContent(content)
-                .addContent(String.format("%n%naddress to replay: %s <%s>", name, email))
+                .addContent(String.format("%n" + "mailto:%s", email))
                 .setEncoding(charset)
                 .build();
+
+        logger.debug("generated mail:" + System.lineSeparator() + mail);
+        return mail;
     }
 
 
-    private MailMessage generateMailToAdmin(final Exception ex) {
+    private MailMessage generateErrorReport(final Exception ex) {
         Date now = new Date();
-        return new MailMessage.Builder()
-                .setName("Mailer")
-                .setAddress(admin)
-                .setSubject("error: " + now)
-                .setContent(String.format("stacktrace:%n%s%n%n", stackTraceToString(ex)))
-                .addContent(String.format("configuration:%n%s%n%n", config))
-                .addContent(String.format("timestamp:%n%s", now))
+        MailMessage report = new MailMessage.Builder()
+                .setAddress(config.emailAdmin())
+                .setSubject("error report: " + now)
+                .setContent(String.format("timestamp:%n%s%n", now))
+                .addContent(String.format("stacktrace:%n%s%n", Pretty.format(ex)))
+                .addContent(String.format("configuration:%n%s%n", config))
                 .setEncoding(Charset.defaultCharset().name())
                 .build();
+
+        logger.debug("generated error report:" + report);
+        return report;
+    }
+
+
+    private void sendMail(final MailMessage mail) {
+        String address = config.emailTo();
+
+        service.sendMail(address, mail);
+        logger.info(String.format("message from \'%s <%s>\' has been sent to \'%s\'",
+                mail.name(), mail.address(), address));
+    }
+
+
+    private void sendErrorReport(final Exception exception) {
+        String address = null;
+
+        try {
+            MailMessage report = generateErrorReport(exception);
+            address = report.address();
+            service.sendMail(address, report);
+            logger.info("error report has been sent to \'" + address + "\'");
+        } catch (Exception ex) {
+            logger.error("couldn't send email to \'" + address + "\'", ex);
+        }
     }
 
 
     private String checkRedirect(final String parameter) {
-        //TODO check parameter is valid URL
-        return Validate.defaultIfNull(parameter, DEFAULT_REDIRECT);
-    }
-
-
-    private static String stackTraceToString(final Exception exception) {
-        String stacktrace;
-
-        try (StringWriter writer = new StringWriter();
-             PrintWriter printer = new PrintWriter(writer, true)) {
-            exception.printStackTrace(printer);
-            stacktrace = writer.toString();
+        try {
+            logger.info("redirecting to \'" + new URI(parameter) + "\'");
+            return parameter;
         } catch (Exception ex) {
-            stacktrace = "Can't print stacktrace:\'" + ex.getMessage() + "\'";
+            logger.error(ex.getMessage());
+            return DEFAULT_REDIRECT;
         }
-
-        return stacktrace;
     }
 }
