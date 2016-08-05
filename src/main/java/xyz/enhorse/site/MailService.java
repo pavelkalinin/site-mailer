@@ -33,6 +33,11 @@ public class MailService {
     }
 
 
+    public String title() {
+        return server.title();
+    }
+
+
     public void sendMail(final String to, final MailMessage mail) {
         Validate.notNull("mail message", mail);
 
