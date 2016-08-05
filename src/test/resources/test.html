@@ -7,7 +7,9 @@
 
 <body>
 <form method="post" action="http://localhost:50465/mailer" target="_top">
+    <!--if message was successfully sent redirect to -->
     <input type="hidden" name="success" value="/success.html">
+    <!--if message sending was failed redirect to -->
     <input type="hidden" name="fail" value="/fail.html">
     <div>
         <div class="row">
