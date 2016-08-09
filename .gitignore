@@ -17,3 +17,5 @@ access.properties
 
 # System
 *.DS_Store
+
+.gitignore

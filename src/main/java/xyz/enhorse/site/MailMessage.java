@@ -23,7 +23,7 @@ public class MailMessage {
                         final String content,
                         final String encoding) {
         this.name = Validate.defaultIfNull(name, "");
-        this.address = Validate.required("address", address);
+        this.address = Validate.defaultIfNull(address, "");
         this.subject = Validate.defaultIfNull(subject, "");
         this.content = Validate.defaultIfNull(content, "");
         this.encoding = Validate.defaultIfNullOrEmpty(encoding, Charset.defaultCharset().name());

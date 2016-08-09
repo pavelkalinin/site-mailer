@@ -1,5 +1,8 @@
 package xyz.enhorse.site;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import xyz.enhorse.commons.Email;
 import xyz.enhorse.commons.PathEx;
 import xyz.enhorse.commons.Validate;
 import xyz.enhorse.site.mail.SMTPConfiguration;
@@ -15,12 +18,15 @@ import java.util.Properties;
  */
 public class Configuration {
 
-    private static final String DEBUG = "service.debug";
+    private static final Logger LOGGER = Logger.getLogger(Application.class);
+
     private static final String HANDLER = "service.handler";
     private static final String PORT = "service.port";
     private static final String EMAIL_TO = "email.to";
     private static final String EMAIL_FROM = "email.from";
+    private static final String DEBUG_SERVICE = "service.debug";
     private static final String EMAIL_ADMIN = "email.admin";
+    private static final String DEBUG_JETTY = "jetty.debug";
 
     private static final int PRIVATE_PORTS_MINIMAL = 49152;
     private static final int PRIVATE_PORTS_MAXIMAL = 65535;
@@ -29,9 +35,9 @@ public class Configuration {
     private boolean debug;
     private String handler;
     private int port;
-    private String to;
-    private String from;
-    private String admin;
+    private Email to;
+    private Email from;
+    private Email admin;
     private SMTPServer smtpServer;
 
 
@@ -51,17 +57,17 @@ public class Configuration {
     }
 
 
-    public String emailTo() {
+    public Email emailTo() {
         return to;
     }
 
 
-    public String emailFrom() {
+    public Email emailFrom() {
         return from;
     }
 
 
-    public String emailAdmin() {
+    public Email emailAdmin() {
         return admin;
     }
 
@@ -76,10 +82,15 @@ public class Configuration {
     }
 
 
+    public Logger logger() {
+        return LOGGER;
+    }
+
+
     @Override
     public String toString() {
         return String.format("[" +
-                        DEBUG + "=%b; " +
+                        DEBUG_SERVICE + "=%b; " +
                         HANDLER + "=\"%s\"; " +
                         PORT + "=%d; " +
                         EMAIL_TO + "=\"%s\"; " +
@@ -97,13 +108,16 @@ public class Configuration {
 
 
     private void setup() {
-        debug = readDebug();
+        debug = readDebugService();
+        LOGGER.setLevel(debug ? Level.DEBUG : Level.INFO);
+        Logger.getRootLogger().setLevel(readDebugJetty() ? Level.DEBUG : Level.WARN);
         handler = readHandler();
         port = readPort();
         to = readEmailTo();
         from = readEmailFrom();
         admin = readEmailAdmin();
         smtpServer = new SMTPServer(new SMTPConfiguration(parameters));
+        LOGGER.debug(String.format("Configuration %s has been loaded", toString()));
     }
 
 
@@ -120,26 +134,39 @@ public class Configuration {
     }
 
 
-    private String readEmailTo() {
+    private Email readEmailTo() {
         String property = EMAIL_TO;
-        return Validate.required(property, parameters.getProperty(property));
+        return Email.parse(Validate.required(property, parameters.getProperty(property)).trim());
     }
 
 
-    private String readEmailFrom() {
-        return Validate.defaultIfNull(parameters.getProperty(EMAIL_FROM), readEmailTo());
+    private Email readEmailFrom() {
+        return parseOrGetDefault(parameters.getProperty(EMAIL_FROM));
     }
 
 
-    private String readEmailAdmin() {
-        return Validate.defaultIfNull(parameters.getProperty(EMAIL_ADMIN), readEmailTo());
+    private Email readEmailAdmin() {
+        return parseOrGetDefault(parameters.getProperty(EMAIL_ADMIN));
     }
 
 
-    private boolean readDebug() {
-        return Boolean.parseBoolean(parameters.getProperty(DEBUG));
+    private Email parseOrGetDefault(final String email) {
+        if (email == null) {
+            LOGGER.warn("\'email.from\' property isn't defined - will be using the value of \'email.to\'");
+            return readEmailTo();
+        }
+        return Email.parse(email.trim());
     }
 
+
+    private boolean readDebugService() {
+        return Boolean.parseBoolean(parameters.getProperty(DEBUG_SERVICE));
+    }
+
+
+    private boolean readDebugJetty() {
+        return Boolean.parseBoolean(parameters.getProperty(DEBUG_JETTY));
+    }
 
     public static Configuration loadFromFile(final String filename) {
         PathEx file = new PathEx(Validate.notNull("configuration file filename", filename));
