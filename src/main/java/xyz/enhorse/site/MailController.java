@@ -1,6 +1,6 @@
 package xyz.enhorse.site;
 
-import org.slf4j.Logger;
+import org.apache.log4j.Logger;
 import xyz.enhorse.commons.Email;
 import xyz.enhorse.commons.Pretty;
 import xyz.enhorse.commons.Validate;
@@ -45,7 +45,7 @@ public class MailController extends HttpServlet {
     @Override
     public void doPost(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException {
-        logger.info(String.format("received %s to send a mail to %s", request, config.emailTo()));
+        logger.debug(String.format("%s to send a mail has been received", request));
 
         try {
             sendMail(generateMail(request));
@@ -62,7 +62,7 @@ public class MailController extends HttpServlet {
             }
         }
 
-        logger.info(String.format("%s has been processed: %d", request, response.getStatus()));
+        logger.debug(String.format("%s has been processed: %d", request, response.getStatus()));
     }
 
 
@@ -81,7 +81,7 @@ public class MailController extends HttpServlet {
                 .setEncoding(charset)
                 .build();
 
-        logger.debug("generated mail:" + System.lineSeparator() + mail);
+        logger.debug("Generated mail:" + System.lineSeparator() + mail);
         return mail;
     }
 
@@ -89,14 +89,14 @@ public class MailController extends HttpServlet {
     private MailMessage generateErrorReport(final Exception ex) {
         Date now = new Date();
         MailMessage report = new MailMessage.Builder()
-                .setSubject("error report: " + now)
+                .setSubject("Error report: " + now)
                 .setContent(String.format("timestamp:%n%s%n", now))
                 .addContent(String.format("stacktrace:%n%s%n", Pretty.format(ex)))
                 .addContent(String.format("configuration:%n%s%n", config))
                 .setEncoding(Charset.defaultCharset().name())
                 .build();
 
-        logger.debug("generated error report:" + report);
+        logger.warn("Generated error report:" + report);
         return report;
     }
 
@@ -105,7 +105,7 @@ public class MailController extends HttpServlet {
         Email address = config.emailTo();
 
         service.sendMail(address, mail);
-        logger.info(String.format("message from \'%s <%s>\' has been sent to \'%s\'",
+        logger.info(String.format("Message from \'%s <%s>\' has been sent to \'%s\'",
                 mail.name(), mail.address(), address));
     }
 
@@ -116,16 +116,16 @@ public class MailController extends HttpServlet {
         try {
             MailMessage report = generateErrorReport(exception);
             service.sendMail(address, report);
-            logger.info("error report has been sent to \'" + address + "\'");
+            logger.warn("Error report has been sent to \'" + address + "\'");
         } catch (Exception ex) {
-            logger.error("couldn't send email to \'" + address + "\'", ex);
+            logger.error("Couldn't send email to \'" + address + "\'", ex);
         }
     }
 
 
     private String checkRedirect(final String parameter) {
         try {
-            logger.info("redirecting to \'" + new URI(parameter) + "\'");
+            logger.debug("Redirecting to \'" + new URI(parameter) + "\'");
             return parameter;
         } catch (Exception ex) {
             logger.error(ex.getMessage());

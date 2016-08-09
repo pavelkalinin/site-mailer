@@ -17,9 +17,6 @@ public class Application {
         }
 
         Configuration configuration = Configuration.loadFromFile(args[0]);
-        if (configuration.isDebugMode()) {
-            System.out.println(configuration);
-        }
 
         MailController mailController = new MailController(configuration);
 
