@@ -25,7 +25,6 @@
         <mockito.version>1.10.19</mockito.version>
         <slf4j.version>1.7.21</slf4j.version>
         <jetty.version>9.3.11.v20160721</jetty.version>
-        <json-io.version>4.5.0</json-io.version>
     </properties>
 
     <dependencies>
@@ -75,13 +74,6 @@
             <artifactId>javax.mail-api</artifactId>
             <version>1.5.5</version>
         </dependency>
-        <!-- JSON Parser -->
-        <dependency>
-            <groupId>com.cedarsoftware</groupId>
-            <artifactId>json-io</artifactId>
-            <version>${json-io.version}</version>
-        </dependency>
-
     </dependencies>
 
     <build>
