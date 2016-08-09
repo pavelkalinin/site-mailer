@@ -3,7 +3,7 @@ The simple sender е-mail from a site
 
 #### usage:
 ```bash
-java -jar mail.jar mailer.properties
+java -jar mailer.jar mailer.properties
 ```
 
 #### mailer.properties
@@ -52,10 +52,11 @@ jetty.debug=false
     <input type="hidden" name="success" value="/success.html">
     <!--if message sending was failed redirect to -->
     <input type="hidden" name="fail" value="/fail.html">
-    <input type="text" name="name" placeholder="Name / Имя"/>
+    
+    <input type="text" name="name" placeholder="Name"/>
     <input type="text" name="email" placeholder="Email"/>
-    <input type="text" name="subject" placeholder="Subject / Тема"/>
-    <textarea name="content" placeholder="Message / Сообщение" rows="8"></textarea>
-    <input type="submit" value="Send / Отправить"/>
+    <input type="text" name="subject" placeholder="Subject"/>
+    <textarea name="content" placeholder="Message" rows="8"></textarea>
+    <input type="submit" value="Send"/>
 </form>
 ```
