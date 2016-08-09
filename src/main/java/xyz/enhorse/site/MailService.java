@@ -1,6 +1,7 @@
 package xyz.enhorse.site;
 
 
+import xyz.enhorse.commons.Email;
 import xyz.enhorse.commons.Validate;
 import xyz.enhorse.site.mail.SMTPServer;
 import xyz.enhorse.site.mail.SMTPTransport;
@@ -24,12 +25,12 @@ import java.io.UnsupportedEncodingException;
 public class MailService {
 
     private final SMTPServer server;
-    private final String from;
+    private final Email from;
 
 
-    public MailService(final SMTPServer smtpServer, final String emailFrom) {
+    public MailService(final SMTPServer smtpServer, final Email emailFrom) {
         server = Validate.notNull("smtp server for mail service", smtpServer);
-        from = Validate.notNullOrEmpty("sender's email", emailFrom);
+        from = Validate.notNull("sender's email", emailFrom);
     }
 
 
@@ -38,7 +39,8 @@ public class MailService {
     }
 
 
-    public void sendMail(final String to, final MailMessage mail) {
+    public void sendMail(final Email to, final MailMessage mail) {
+        Validate.notNull("mail recipient", to);
         Validate.notNull("mail message", mail);
 
         Session session = server.createSession();
@@ -47,7 +49,7 @@ public class MailService {
     }
 
 
-    private MimeMessage mimeMessage(final String to, final MailMessage message, final Session session) {
+    private MimeMessage mimeMessage(final Email to, final MailMessage message, final Session session) {
         MimeMessage mimeMessage = new MimeMessage(session);
 
         try {
@@ -71,18 +73,18 @@ public class MailService {
     }
 
 
-    private Address address(final String address) {
+    private Address address(final Email email) {
         try {
-            return new InternetAddress(address);
+            return new InternetAddress(email.address());
         } catch (AddressException ex) {
-            throw new IllegalArgumentException("Illegal address: \'" + address + "\'", ex);
+            throw new IllegalArgumentException("Illegal address: \'" + email + "\'", ex);
         }
     }
 
 
-    private Address address(final String address, final MailMessage message) {
+    private Address address(final Email email, final MailMessage message) {
         try {
-            return new InternetAddress(address, message.name(), message.encoding());
+            return new InternetAddress(email.address(), message.name(), message.encoding());
         } catch (UnsupportedEncodingException ex) {
             return new InternetAddress();
         }

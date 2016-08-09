@@ -2,6 +2,7 @@ package xyz.enhorse.site;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xyz.enhorse.commons.Email;
 import xyz.enhorse.commons.PathEx;
 import xyz.enhorse.commons.Validate;
 import xyz.enhorse.site.mail.SMTPConfiguration;
@@ -33,9 +34,9 @@ public class Configuration {
     private boolean debug;
     private String handler;
     private int port;
-    private String to;
-    private String from;
-    private String admin;
+    private Email to;
+    private Email from;
+    private Email admin;
     private SMTPServer smtpServer;
 
 
@@ -55,17 +56,17 @@ public class Configuration {
     }
 
 
-    public String emailTo() {
+    public Email emailTo() {
         return to;
     }
 
 
-    public String emailFrom() {
+    public Email emailFrom() {
         return from;
     }
 
 
-    public String emailAdmin() {
+    public Email emailAdmin() {
         return admin;
     }
 
@@ -129,19 +130,21 @@ public class Configuration {
     }
 
 
-    private String readEmailTo() {
+    private Email readEmailTo() {
         String property = EMAIL_TO;
-        return Validate.required(property, parameters.getProperty(property));
+        return Email.parse(Validate.required(property, parameters.getProperty(property)));
     }
 
 
-    private String readEmailFrom() {
-        return Validate.defaultIfNull(parameters.getProperty(EMAIL_FROM), readEmailTo());
+    private Email readEmailFrom() {
+        String email = parameters.getProperty(EMAIL_FROM);
+        return email != null ? Email.parse(email) : readEmailTo();
     }
 
 
-    private String readEmailAdmin() {
-        return Validate.defaultIfNull(parameters.getProperty(EMAIL_ADMIN), readEmailTo());
+    private Email readEmailAdmin() {
+        String email = parameters.getProperty(EMAIL_ADMIN);
+        return email != null ? Email.parse(email) : readEmailTo();
     }
 
 

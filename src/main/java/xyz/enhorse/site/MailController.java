@@ -1,6 +1,7 @@
 package xyz.enhorse.site;
 
 import org.slf4j.Logger;
+import xyz.enhorse.commons.Email;
 import xyz.enhorse.commons.Pretty;
 import xyz.enhorse.commons.Validate;
 
@@ -88,7 +89,6 @@ public class MailController extends HttpServlet {
     private MailMessage generateErrorReport(final Exception ex) {
         Date now = new Date();
         MailMessage report = new MailMessage.Builder()
-                .setAddress(config.emailAdmin())
                 .setSubject("error report: " + now)
                 .setContent(String.format("timestamp:%n%s%n", now))
                 .addContent(String.format("stacktrace:%n%s%n", Pretty.format(ex)))
@@ -102,7 +102,7 @@ public class MailController extends HttpServlet {
 
 
     private void sendMail(final MailMessage mail) {
-        String address = config.emailTo();
+        Email address = config.emailTo();
 
         service.sendMail(address, mail);
         logger.info(String.format("message from \'%s <%s>\' has been sent to \'%s\'",
@@ -111,11 +111,10 @@ public class MailController extends HttpServlet {
 
 
     private void sendErrorReport(final Exception exception) {
-        String address = null;
+        Email address = config.emailAdmin();
 
         try {
             MailMessage report = generateErrorReport(exception);
-            address = report.address();
             service.sendMail(address, report);
             logger.info("error report has been sent to \'" + address + "\'");
         } catch (Exception ex) {
