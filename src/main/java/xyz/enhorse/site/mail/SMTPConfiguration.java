@@ -162,6 +162,6 @@ public class SMTPConfiguration {
 
     @Override
     public String toString() {
-        return Pretty.format(parameters);
+        return Pretty.format(get());
     }
 }
