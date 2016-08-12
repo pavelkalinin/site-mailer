@@ -1,10 +1,12 @@
 package xyz.enhorse.site.mail;
 
+import xyz.enhorse.site.ConfigurationProperties;
+
 /**
  * @author <a href="mailto:pavel13kalinin@gmail.com">Pavel Kalinin</a>
  *         28.07.2016
  */
-public enum SMTPProperties {
+public enum SMTPProperties implements ConfigurationProperties {
     HOST("smtp.host") {
         @Override
         public String of(final SMTPProtocols protocol) {
@@ -67,16 +69,16 @@ public enum SMTPProperties {
     };
 
 
-    private final String property;
+    private final String value;
 
 
     SMTPProperties(final String property) {
-        this.property = property;
+        value = property;
     }
 
 
     public String property() {
-        return property;
+        return value;
     }
 
 

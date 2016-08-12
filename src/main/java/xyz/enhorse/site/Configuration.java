@@ -12,7 +12,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-import static xyz.enhorse.site.ConfigurationProperties.*;
+import static xyz.enhorse.site.ServiceProperties.*;
 
 /**
  * @author <a href="mailto:pavel13kalinin@gmail.com">Pavel Kalinin</a>

@@ -4,24 +4,7 @@ package xyz.enhorse.site;
  * @author <a href="mailto:pavel13kalinin@gmail.com">Pavel Kalinin</a>
  *         12.08.2016
  */
-public enum ConfigurationProperties {
-    HANDLER("service.handler"),
-    PORT("service.port"),
-    EMAIL_TO("email.to"),
-    EMAIL_FROM("email.from"),
-    EMAIL_ADMIN("email.admin"),
-    DEBUG_SERVICE("service.debug"),
-    DEBUG_JETTY("jetty.debug");
+public interface ConfigurationProperties {
 
-    private final String value;
-
-
-    ConfigurationProperties(final String property) {
-        value = property;
-    }
-
-
-    public String property() {
-        return value;
-    }
+    String property();
 }
