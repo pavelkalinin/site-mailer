@@ -12,6 +12,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import static xyz.enhorse.site.ConfigurationProperties.*;
+
 /**
  * @author <a href="mailto:pavel13kalinin@gmail.com">Pavel Kalinin</a>
  *         26.07.2016
@@ -19,14 +21,6 @@ import java.util.Properties;
 public class Configuration {
 
     private static final Logger LOGGER = Logger.getLogger(Application.class);
-
-    private static final String HANDLER = "service.handler";
-    private static final String PORT = "service.port";
-    private static final String EMAIL_TO = "email.to";
-    private static final String EMAIL_FROM = "email.from";
-    private static final String DEBUG_SERVICE = "service.debug";
-    private static final String EMAIL_ADMIN = "email.admin";
-    private static final String DEBUG_JETTY = "jetty.debug";
 
     private static final int PRIVATE_PORTS_MINIMAL = 49152;
     private static final int PRIVATE_PORTS_MAXIMAL = 65535;
@@ -122,31 +116,31 @@ public class Configuration {
 
 
     private String readHandler() {
-        String property = HANDLER;
+        String property = HANDLER.property();
         return Validate.required(property, parameters.getProperty(property));
     }
 
 
     private int readPort() {
-        String property = PORT;
+        String property = PORT.property();
         int port = Integer.parseInt(Validate.required(property, parameters.getProperty(property)));
         return Validate.isBetweenOrEquals("service port", port, PRIVATE_PORTS_MINIMAL, PRIVATE_PORTS_MAXIMAL);
     }
 
 
     private Email readEmailTo() {
-        String property = EMAIL_TO;
+        String property = EMAIL_TO.property();
         return Email.parse(Validate.required(property, parameters.getProperty(property)).trim());
     }
 
 
     private Email readEmailFrom() {
-        return parseOrGetDefault(parameters.getProperty(EMAIL_FROM));
+        return parseOrGetDefault(parameters.getProperty(EMAIL_FROM.property()));
     }
 
 
     private Email readEmailAdmin() {
-        return parseOrGetDefault(parameters.getProperty(EMAIL_ADMIN));
+        return parseOrGetDefault(parameters.getProperty(EMAIL_ADMIN.property()));
     }
 
 
@@ -160,12 +154,12 @@ public class Configuration {
 
 
     private boolean readDebugService() {
-        return Boolean.parseBoolean(parameters.getProperty(DEBUG_SERVICE));
+        return Boolean.parseBoolean(parameters.getProperty(DEBUG_SERVICE.property()));
     }
 
 
     private boolean readDebugJetty() {
-        return Boolean.parseBoolean(parameters.getProperty(DEBUG_JETTY));
+        return Boolean.parseBoolean(parameters.getProperty(DEBUG_JETTY.property()));
     }
 
     public static Configuration loadFromFile(final String filename) {
