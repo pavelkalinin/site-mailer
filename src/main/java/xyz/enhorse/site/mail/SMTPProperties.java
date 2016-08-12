@@ -83,4 +83,10 @@ public enum SMTPProperties implements ConfigurationProperties {
 
 
     public abstract String of(final SMTPProtocols protocol);
+
+
+    @Override
+    public String toString() {
+        return property();
+    }
 }

@@ -24,4 +24,10 @@ public enum ServiceProperties implements ConfigurationProperties {
     public String property() {
         return value;
     }
+
+
+    @Override
+    public String toString() {
+        return property();
+    }
 }
