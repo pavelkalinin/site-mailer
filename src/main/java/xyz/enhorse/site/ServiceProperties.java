@@ -11,7 +11,8 @@ public enum ServiceProperties implements ConfigurationProperties {
     EMAIL_FROM("email.from"),
     EMAIL_ADMIN("email.admin"),
     DEBUG_SERVICE("service.debug"),
-    DEBUG_JETTY("jetty.debug");
+    DEBUG_JETTY("jetty.debug"),
+    SMTP_SERVER("smtp.server");
 
     private final String value;
 
