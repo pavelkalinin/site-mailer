@@ -12,29 +12,25 @@ import java.util.Properties;
  * @author <a href="mailto:pavel13kalinin@gmail.com">Pavel Kalinin</a>
  *         12.08.2016
  */
-public class ConfigurationProducer {
+public class PropertiesFileProducer {
 
     private final static Properties EMPTY = new Properties();
-    public final static ConfigurationProducer EMPTY_CONFIG = new ConfigurationProducer(EMPTY);
 
     private final static Properties SERVICE = fillServiceProperties();
-    public final static ConfigurationProducer SERVICE_CONFIG = new ConfigurationProducer(SERVICE);
 
     private final static Properties SMTP = fillSMTPProperties();
-    public final static ConfigurationProducer SMTP_CONFIG = new ConfigurationProducer(SMTP);
 
-    private final static Properties FULL = fillAllProperties();
-    public final static ConfigurationProducer FULL_CONFIG = new ConfigurationProducer(FULL);
+    private final static Properties ALL = fillAllProperties();
 
     private final Properties current;
 
 
-    private ConfigurationProducer(final Properties properties) {
-        current = properties;
+    private PropertiesFileProducer(final Properties properties) {
+        current = appendProperties(new Properties(), properties);
     }
 
 
-    private ConfigurationProducer(final ConfigurationProducer producer) {
+    private PropertiesFileProducer(final PropertiesFileProducer producer) {
         current = producer.properties();
     }
 
@@ -44,7 +40,7 @@ public class ConfigurationProducer {
     }
 
 
-    public ConfigurationProducer putProperty(final ConfigurationProperties property, final String value) {
+    public PropertiesFileProducer addProperty(final ConfigurationProperties property, final String value) {
         final String name = Validate.required("property", property.property());
 
         if (current.getProperty(name) != null) {
@@ -52,16 +48,16 @@ public class ConfigurationProducer {
         }
 
         current.put(name, value);
-        return new ConfigurationProducer(this);
+        return new PropertiesFileProducer(this);
     }
 
 
-    public ConfigurationProducer removeProperty(final ConfigurationProperties property) {
+    public PropertiesFileProducer removeProperty(final ConfigurationProperties property) {
         final String name = Validate.required("property", property.property());
 
         if (current.getProperty(name) != null) {
             current.remove(name);
-            return new ConfigurationProducer(this);
+            return new PropertiesFileProducer(this);
         }
 
         return this;
@@ -85,6 +81,26 @@ public class ConfigurationProducer {
     @Override
     public String toString() {
         return current.toString();
+    }
+
+
+    public static PropertiesFileProducer emptyProperties() {
+        return new PropertiesFileProducer(EMPTY);
+    }
+
+
+    public static PropertiesFileProducer allProperties() {
+        return new PropertiesFileProducer(ALL);
+    }
+
+
+    public static PropertiesFileProducer serviceProperties() {
+        return new PropertiesFileProducer(SERVICE);
+    }
+
+
+    public static PropertiesFileProducer smtpProperties() {
+        return new PropertiesFileProducer(SMTP);
     }
 
 

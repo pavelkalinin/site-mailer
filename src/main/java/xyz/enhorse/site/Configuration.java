@@ -31,9 +31,9 @@ public class Configuration {
 
     private Configuration(final Properties properties) {
         parameters = Validate.notNull("parameters", properties);
-        smtpServer = new SMTPServer(new SMTPConfiguration(parameters));
         setup();
-        LOGGER.info(String.format("Configuration %s has been loaded", toString()));
+        smtpServer = new SMTPServer(new SMTPConfiguration(parameters));
+        LOGGER.info(String.format("Configuration %s has been successfully loaded", toString()));
     }
 
 
