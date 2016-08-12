@@ -20,59 +20,50 @@ import static xyz.enhorse.site.ServiceProperties.*;
  */
 public class Configuration {
 
-    private static final Logger LOGGER = Logger.getLogger(Application.class);
+    private static final Logger LOGGER = Logger.getLogger(Configuration.class);
 
     private static final int PRIVATE_PORTS_MINIMAL = 49152;
     private static final int PRIVATE_PORTS_MAXIMAL = 65535;
 
     private final Properties parameters;
-    private boolean debug;
-    private String handler;
-    private int port;
-    private Email to;
-    private Email from;
-    private Email admin;
-    private SMTPServer smtpServer;
+    private final SMTPServer smtpServer;
 
 
     private Configuration(final Properties properties) {
         parameters = Validate.notNull("parameters", properties);
+        smtpServer = new SMTPServer(new SMTPConfiguration(parameters));
         setup();
+        LOGGER.info(String.format("Configuration %s has been loaded", toString()));
     }
 
 
     public String serviceHandler() {
-        return handler;
+        return readHandler();
     }
 
 
     public int servicePort() {
-        return port;
+        return readPort();
     }
 
 
     public Email emailTo() {
-        return to;
+        return readEmailTo();
     }
 
 
     public Email emailFrom() {
-        return from;
+        return readEmailFrom();
     }
 
 
     public Email emailAdmin() {
-        return admin;
+        return readEmailAdmin();
     }
 
 
     public SMTPServer smtpServer() {
         return smtpServer;
-    }
-
-
-    public boolean isDebugMode() {
-        return debug;
     }
 
 
@@ -85,13 +76,15 @@ public class Configuration {
     public String toString() {
         return String.format("[" +
                         DEBUG_SERVICE + "=%b; " +
+                        DEBUG_JETTY + "=%b; " +
                         HANDLER + "=\"%s\"; " +
                         PORT + "=%d; " +
                         EMAIL_TO + "=\"%s\"; " +
                         EMAIL_FROM + "=\"%s\"; " +
                         EMAIL_ADMIN + "=\"%s\"; " +
-                        "smtp.server=%s]",
-                isDebugMode(),
+                        SMTP_SERVER + "=%s]",
+                readDebugService(),
+                readDebugJetty(),
                 serviceHandler(),
                 servicePort(),
                 emailTo(),
@@ -102,16 +95,20 @@ public class Configuration {
 
 
     private void setup() {
-        debug = readDebugService();
-        LOGGER.setLevel(debug ? Level.DEBUG : Level.INFO);
+        LOGGER.setLevel(readDebugService() ? Level.DEBUG : Level.INFO);
         Logger.getRootLogger().setLevel(readDebugJetty() ? Level.DEBUG : Level.WARN);
-        handler = readHandler();
-        port = readPort();
-        to = readEmailTo();
-        from = readEmailFrom();
-        admin = readEmailAdmin();
-        smtpServer = new SMTPServer(new SMTPConfiguration(parameters));
-        LOGGER.debug(String.format("Configuration %s has been loaded", toString()));
+        checkRequirements();
+    }
+
+
+    private void checkRequirements() {
+        try {
+            readHandler();
+            readPort();
+            readEmailTo();
+        } catch (IllegalStateException ex) {
+            throw new IllegalArgumentException("Can't load configuration because the property " + ex.getMessage(), ex);
+        }
     }
 
 
@@ -135,18 +132,21 @@ public class Configuration {
 
 
     private Email readEmailFrom() {
-        return parseOrGetDefault(parameters.getProperty(EMAIL_FROM.property()));
+        return parseOrGetDefault(EMAIL_FROM.property());
     }
 
 
     private Email readEmailAdmin() {
-        return parseOrGetDefault(parameters.getProperty(EMAIL_ADMIN.property()));
+        return parseOrGetDefault(EMAIL_ADMIN.property());
     }
 
 
-    private Email parseOrGetDefault(final String email) {
+    private Email parseOrGetDefault(final String property) {
+        String email = parameters.getProperty(property);
+
         if (email == null) {
-            LOGGER.warn("\'email.from\' property isn't defined - will be using the value of \'email.to\'");
+            LOGGER.debug(String.format("\'%s\' property isn't defined - will be using the value of \'%s\'",
+                    property, EMAIL_TO.property()));
             return readEmailTo();
         }
         return Email.parse(email.trim());
@@ -161,6 +161,7 @@ public class Configuration {
     private boolean readDebugJetty() {
         return Boolean.parseBoolean(parameters.getProperty(DEBUG_JETTY.property()));
     }
+
 
     public static Configuration loadFromFile(final String filename) {
         PathEx file = new PathEx(Validate.notNull("configuration file filename", filename));

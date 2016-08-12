@@ -22,17 +22,6 @@ public class SMTPConfiguration {
 
     private final Properties parameters;
 
-    private String host;
-    private int port;
-    private String user;
-    private String password;
-    private boolean authRequired;
-    private boolean sslEnabled;
-    private boolean tlsEnabled;
-    private SMTPProtocols protocol;
-    private String mailer;
-    private boolean debug;
-
 
     public SMTPConfiguration(final Properties properties) {
         parameters = Validate.notNull("properties for smtp server", properties);
@@ -41,54 +30,55 @@ public class SMTPConfiguration {
 
 
     public boolean isAuthRequired() {
-        return authRequired;
+        return readAuthorization();
     }
 
 
     public String user() {
-        return user;
+        return readUser();
     }
 
 
     public String password() {
-        return password;
+        return readPassword();
     }
 
 
     public String mailer() {
-        return mailer;
+        return readMailer();
     }
 
 
     public Properties get() {
         Properties properties = new Properties();
+        SMTPProtocols protocol = defineProtocol();
 
-        properties.put(HOST.of(protocol), host);
-        properties.put(PORT.of(protocol), port);
-        properties.put(USER.of(protocol), user);
-        properties.put(PASSWORD.of(protocol), password);
-        properties.put(AUTH.of(protocol), authRequired);
-        properties.put(SSL.of(protocol), sslEnabled);
-        properties.put(TLS.of(protocol), tlsEnabled);
+        properties.put(HOST.of(protocol), readHost());
+        properties.put(PORT.of(protocol), readPort());
+        properties.put(USER.of(protocol), readUser());
+        properties.put(PASSWORD.of(protocol), readPassword());
+        properties.put(AUTH.of(protocol), readAuthorization());
+        properties.put(SSL.of(protocol), readSSL());
+        properties.put(TLS.of(protocol), readTLS());
         properties.put(PROTOCOL.of(protocol), protocol.tag());
-        properties.put(MAILER.of(protocol), mailer);
-        properties.put(DEBUG.of(protocol), String.valueOf(debug)); // javax.mail.Session counts on to find String
+        properties.put(MAILER.of(protocol), readMailer());
+        properties.put(DEBUG.of(protocol), String.valueOf(readDebug())); // javax.mail.Session expects to find String
 
         return properties;
     }
 
 
     private void setup() {
-        host = readHost();
-        port = readPort();
-        user = readUser();
-        password = readPassword();
-        authRequired = readAuthorization();
-        sslEnabled = readSSL();
-        tlsEnabled = readTLS();
-        protocol = defineProtocol();
-        mailer = readMailer();
-        debug = readDebug();
+        checkRequirements();
+    }
+
+
+    private void checkRequirements() {
+        try {
+            readHost();
+        } catch (IllegalStateException ex) {
+            throw new IllegalArgumentException("Can't load configuration because the property " + ex.getMessage(), ex);
+        }
     }
 
 
@@ -104,7 +94,6 @@ public class SMTPConfiguration {
         } catch (Exception ex) {
             return defineProtocol().port();
         }
-
     }
 
 

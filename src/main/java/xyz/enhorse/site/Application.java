@@ -12,7 +12,7 @@ public class Application {
 
     public static void main(String[] args) throws Exception {
         if (args.length < 1) {
-            System.out.println("usage: mailer access.properties.file");
+            System.out.println("usage: java -jar mailer.jar file");
             System.exit(0);
         }
 
