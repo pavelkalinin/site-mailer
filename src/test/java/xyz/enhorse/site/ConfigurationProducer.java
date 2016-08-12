@@ -16,11 +16,15 @@ public class ConfigurationProducer {
 
     private final static Properties EMPTY = new Properties();
     public final static ConfigurationProducer EMPTY_CONFIG = new ConfigurationProducer(EMPTY);
+
     private final static Properties SERVICE = fillServiceProperties();
     public final static ConfigurationProducer SERVICE_CONFIG = new ConfigurationProducer(SERVICE);
+
     private final static Properties SMTP = fillSMTPProperties();
     public final static ConfigurationProducer SMTP_CONFIG = new ConfigurationProducer(SMTP);
 
+    private final static Properties FULL = fillAllProperties();
+    public final static ConfigurationProducer FULL_CONFIG = new ConfigurationProducer(FULL);
 
     private final Properties current;
 
@@ -36,13 +40,7 @@ public class ConfigurationProducer {
 
 
     private Properties properties() {
-        final Properties properties = new Properties();
-
-        for (Map.Entry<Object, Object> entry : current.entrySet()) {
-            properties.put(entry.getKey(), entry.getValue());
-        }
-
-        return properties;
+        return appendProperties(new Properties(), current);
     }
 
 
@@ -84,19 +82,25 @@ public class ConfigurationProducer {
     }
 
 
+    @Override
+    public String toString() {
+        return current.toString();
+    }
+
+
     private static Properties fillSMTPProperties() {
         final Properties properties = new Properties();
 
-        properties.put(SMTPProperties.AUTH, false);
-        properties.put(SMTPProperties.DEBUG, false);
-        properties.put(SMTPProperties.HOST, "smtp.server.com");
-        properties.put(SMTPProperties.MAILER, "mailer");
-        properties.put(SMTPProperties.PASSWORD, "password");
-        properties.put(SMTPProperties.PORT, 25);
-        properties.put(SMTPProperties.PROTOCOL, SMTPProtocols.BASIC);
-        properties.put(SMTPProperties.SSL, false);
-        properties.put(SMTPProperties.TLS, false);
-        properties.put(SMTPProperties.USER, "user");
+        properties.put(SMTPProperties.AUTH.property(), "false");
+        properties.put(SMTPProperties.DEBUG.property(), "false");
+        properties.put(SMTPProperties.HOST.property(), "smtp.server.com");
+        properties.put(SMTPProperties.MAILER.property(), "mailer");
+        properties.put(SMTPProperties.PASSWORD.property(), "password");
+        properties.put(SMTPProperties.PORT.property(), "25");
+        properties.put(SMTPProperties.PROTOCOL.property(), SMTPProtocols.BASIC.tag());
+        properties.put(SMTPProperties.SSL.property(), "false");
+        properties.put(SMTPProperties.TLS.property(), "false");
+        properties.put(SMTPProperties.USER.property(), "user");
 
         return properties;
     }
@@ -105,14 +109,33 @@ public class ConfigurationProducer {
     private static Properties fillServiceProperties() {
         final Properties properties = new Properties();
 
-        properties.put(ServiceProperties.DEBUG_JETTY, false);
-        properties.put(ServiceProperties.DEBUG_SERVICE, false);
-        properties.put(ServiceProperties.EMAIL_ADMIN, "admin@mail.com");
-        properties.put(ServiceProperties.EMAIL_FROM, "admin@mail.com");
-        properties.put(ServiceProperties.EMAIL_TO, "admin@mail.com");
-        properties.put(ServiceProperties.HANDLER, "/handler");
-        properties.put(ServiceProperties.PORT, 50000);
+        properties.put(ServiceProperties.DEBUG_JETTY.property(), "false");
+        properties.put(ServiceProperties.DEBUG_SERVICE.property(), "false");
+        properties.put(ServiceProperties.EMAIL_ADMIN.property(), "admin@mail.com");
+        properties.put(ServiceProperties.EMAIL_FROM.property(), "from@mail.com");
+        properties.put(ServiceProperties.EMAIL_TO.property(), "to@mail.com");
+        properties.put(ServiceProperties.HANDLER.property(), "/handler");
+        properties.put(ServiceProperties.PORT.property(), "50000");
 
         return properties;
+    }
+
+
+    private static Properties fillAllProperties() {
+        final Properties properties = new Properties();
+
+        appendProperties(properties, fillServiceProperties());
+        appendProperties(properties, fillSMTPProperties());
+
+        return properties;
+    }
+
+
+    private static Properties appendProperties(final Properties to, final Properties from) {
+        for (Map.Entry<Object, Object> entry : from.entrySet()) {
+            to.put(entry.getKey(), entry.getValue());
+        }
+
+        return to;
     }
 }
