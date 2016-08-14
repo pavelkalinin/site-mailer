@@ -4,7 +4,11 @@ import xyz.enhorse.commons.Validate;
 import xyz.enhorse.site.mail.SMTPProperties;
 import xyz.enhorse.site.mail.SMTPProtocols;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.Map;
 import java.util.Properties;
 
@@ -13,14 +17,6 @@ import java.util.Properties;
  *         12.08.2016
  */
 public class PropertiesFileProducer {
-
-    private final static Properties EMPTY = new Properties();
-
-    private final static Properties SERVICE = fillServiceProperties();
-
-    private final static Properties SMTP = fillSMTPProperties();
-
-    private final static Properties ALL = fillAllProperties();
 
     private final Properties current;
 
@@ -85,26 +81,26 @@ public class PropertiesFileProducer {
 
 
     public static PropertiesFileProducer emptyProperties() {
-        return new PropertiesFileProducer(EMPTY);
+        return new PropertiesFileProducer(new Properties());
     }
 
 
     public static PropertiesFileProducer allProperties() {
-        return new PropertiesFileProducer(ALL);
+        return new PropertiesFileProducer(buildAllProperties());
     }
 
 
     public static PropertiesFileProducer serviceProperties() {
-        return new PropertiesFileProducer(SERVICE);
+        return new PropertiesFileProducer(buildServiceProperties());
     }
 
 
     public static PropertiesFileProducer smtpProperties() {
-        return new PropertiesFileProducer(SMTP);
+        return new PropertiesFileProducer(buildSMTPProperties());
     }
 
 
-    private static Properties fillSMTPProperties() {
+    private static Properties buildSMTPProperties() {
         final Properties properties = new Properties();
 
         properties.put(SMTPProperties.AUTH.property(), "false");
@@ -122,7 +118,7 @@ public class PropertiesFileProducer {
     }
 
 
-    private static Properties fillServiceProperties() {
+    private static Properties buildServiceProperties() {
         final Properties properties = new Properties();
 
         properties.put(ServiceProperties.DEBUG_JETTY.property(), "false");
@@ -137,11 +133,11 @@ public class PropertiesFileProducer {
     }
 
 
-    private static Properties fillAllProperties() {
+    private static Properties buildAllProperties() {
         final Properties properties = new Properties();
 
-        appendProperties(properties, fillServiceProperties());
-        appendProperties(properties, fillSMTPProperties());
+        appendProperties(properties, buildServiceProperties());
+        appendProperties(properties, buildSMTPProperties());
 
         return properties;
     }

@@ -1,5 +1,6 @@
 package xyz.enhorse.site;
 
+import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -10,9 +11,8 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 
 import static org.junit.Assert.*;
-import static xyz.enhorse.site.Configuration.loadFromFile;
-import static xyz.enhorse.site.PropertiesFileProducer.allProperties;
-import static xyz.enhorse.site.PropertiesFileProducer.smtpProperties;
+import static xyz.enhorse.site.Configuration.*;
+import static xyz.enhorse.site.PropertiesFileProducer.*;
 import static xyz.enhorse.site.ServiceProperties.*;
 
 /**
@@ -60,6 +60,30 @@ public class ConfigurationTest {
 
 
     @Test
+    public void serviceHandler_equalsServiceHandler() throws Exception {
+        String expected = "/super-handler";
+        File file = allProperties()
+                .addProperty(HANDLER, expected)
+                .saveTo(temp.newFile());
+        Configuration configuration = loadFromFile(file.getAbsolutePath());
+
+        assertEquals(expected, configuration.serviceHandler());
+    }
+
+
+    @Test
+    public void serviceHandler_withIllegalServiceHandler_empty() throws Exception {
+        File file = allProperties()
+                .addProperty(HANDLER, "")
+                .saveTo(temp.newFile());
+
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("less");
+        assertNull(loadFromFile(file.getAbsolutePath()));
+    }
+
+
+    @Test
     public void load_withoutPort() throws Exception {
         File file = allProperties()
                 .removeProperty(PORT)
@@ -72,6 +96,66 @@ public class ConfigurationTest {
 
 
     @Test
+    public void load_withIllegalPort_lessThenLegal() throws Exception {
+        File file = allProperties()
+                .addProperty(PORT, "1")
+                .saveTo(temp.newFile());
+
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("less");
+        assertNull(loadFromFile(file.getAbsolutePath()));
+    }
+
+
+    @Test
+    public void load_withIllegalPort_GreaterThenLegal() throws Exception {
+        File file = allProperties()
+                .addProperty(PORT, "7000000")
+                .saveTo(temp.newFile());
+
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("greater");
+        assertNull(loadFromFile(file.getAbsolutePath()));
+    }
+
+
+    @Test
+    public void load_withIllegalPort_notNumber() throws Exception {
+        File file = allProperties()
+                .addProperty(PORT, "string")
+                .saveTo(temp.newFile());
+
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("greater");
+        assertNull(loadFromFile(file.getAbsolutePath()));
+    }
+
+
+    @Test
+    public void load_withIllegalPort_empty() throws Exception {
+        File file = allProperties()
+                .addProperty(PORT, "")
+                .saveTo(temp.newFile());
+
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("greater");
+        assertNull(loadFromFile(file.getAbsolutePath()));
+    }
+
+
+    @Test
+    public void servicePort_equalsServicePort() throws Exception {
+        int expected = 54321;
+        File file = allProperties()
+                .addProperty(PORT, String.valueOf(expected))
+                .saveTo(temp.newFile());
+        Configuration configuration = loadFromFile(file.getAbsolutePath());
+
+        assertEquals(expected, configuration.servicePort());
+    }
+
+
+    @Test
     public void load_withoutEmailTo() throws Exception {
         File file = allProperties()
                 .removeProperty(EMAIL_TO)
@@ -80,6 +164,130 @@ public class ConfigurationTest {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage(EMAIL_TO.property());
         assertNull(loadFromFile(file.getAbsolutePath()));
+    }
+
+
+    @Test
+    public void emailTo_equalsEmailTo() throws Exception {
+        String expected = "super@super.com";
+        File file = allProperties()
+                .addProperty(EMAIL_TO, expected)
+                .saveTo(temp.newFile());
+        Configuration configuration = loadFromFile(file.getAbsolutePath());
+
+        assertEquals(expected, String.valueOf(configuration.emailTo()));
+    }
+
+
+    @Test
+    public void emailFrom_equals_emailTo_whenLoad_withoutEmailFrom() throws Exception {
+        File file = allProperties()
+                .removeProperty(EMAIL_FROM)
+                .saveTo(temp.newFile());
+        Configuration configuration = loadFromFile(file.getAbsolutePath());
+
+        assertEquals(configuration.emailTo(), configuration.emailFrom());
+    }
+
+
+    @Test
+    public void emailFrom_equalsEmailFrom() throws Exception {
+        String expected = "super@super.com";
+        File file = allProperties()
+                .addProperty(EMAIL_FROM, expected)
+                .saveTo(temp.newFile());
+        Configuration configuration = loadFromFile(file.getAbsolutePath());
+
+        assertEquals(expected, String.valueOf(configuration.emailFrom()));
+    }
+
+
+    @Test
+    public void emailAdmin_equals_emailTo_whenLoad_withoutEmailAdmin() throws Exception {
+        File file = allProperties()
+                .removeProperty(EMAIL_ADMIN)
+                .saveTo(temp.newFile());
+        Configuration configuration = loadFromFile(file.getAbsolutePath());
+
+        assertEquals(configuration.emailTo(), configuration.emailAdmin());
+    }
+
+
+    @Test
+    public void emailAdmin_equalsEmailAdmin() throws Exception {
+        String expected = "super@super.com";
+        File file = allProperties()
+                .addProperty(EMAIL_ADMIN, expected)
+                .saveTo(temp.newFile());
+        Configuration configuration = loadFromFile(file.getAbsolutePath());
+
+        assertEquals(expected, String.valueOf(configuration.emailAdmin()));
+    }
+
+
+    @Test
+    public void serviceDebug_IsFalse_whenLoad_withoutServiceDebug() throws Exception {
+        File file = allProperties()
+                .removeProperty(DEBUG_SERVICE)
+                .saveTo(temp.newFile());
+        Configuration configuration = loadFromFile(file.getAbsolutePath());
+
+        assertFalse(configuration.logger().isDebugEnabled());
+    }
+
+
+    @Test
+    public void serviceDebug_isTrue_whenLoad_withServiceDebug_isTrue() throws Exception {
+        File file = allProperties()
+                .addProperty(DEBUG_SERVICE, "true")
+                .saveTo(temp.newFile());
+        Configuration configuration = loadFromFile(file.getAbsolutePath());
+
+        assertTrue(configuration.logger().isDebugEnabled());
+    }
+
+
+    @Test
+    public void serviceDebug_isFalse_whenLoad_withServiceDebug_isFalse() throws Exception {
+        File file = allProperties()
+                .addProperty(DEBUG_SERVICE, "false")
+                .saveTo(temp.newFile());
+        Configuration configuration = loadFromFile(file.getAbsolutePath());
+
+        assertFalse(configuration.logger().isDebugEnabled());
+    }
+
+
+    @Test
+    public void jettyDebug_isFalse_whenLoad_withoutJettyDebug() throws Exception {
+        File file = allProperties()
+                .removeProperty(DEBUG_JETTY)
+                .saveTo(temp.newFile());
+        assertNotNull(loadFromFile(file.getAbsolutePath()));
+
+        assertFalse(Logger.getRootLogger().isDebugEnabled());
+    }
+
+
+    @Test
+    public void jettyDebug_IsTrue_whenLoad_withJettyDebug_isTrue() throws Exception {
+        File file = allProperties()
+                .addProperty(DEBUG_JETTY, "true")
+                .saveTo(temp.newFile());
+        assertNotNull(loadFromFile(file.getAbsolutePath()));
+
+        assertTrue(Logger.getRootLogger().isDebugEnabled());
+    }
+
+
+    @Test
+    public void jettyDebug_IsFalse_whenLoad_withJettyDebug_isFalse() throws Exception {
+        File file = allProperties()
+                .addProperty(DEBUG_JETTY, "false")
+                .saveTo(temp.newFile());
+        assertNotNull(loadFromFile(file.getAbsolutePath()));
+
+        assertFalse(Logger.getRootLogger().isDebugEnabled());
     }
 
 
