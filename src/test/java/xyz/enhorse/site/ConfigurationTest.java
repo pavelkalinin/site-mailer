@@ -11,8 +11,9 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 
 import static org.junit.Assert.*;
-import static xyz.enhorse.site.Configuration.*;
-import static xyz.enhorse.site.PropertiesFileProducer.*;
+import static xyz.enhorse.site.Configuration.loadFromFile;
+import static xyz.enhorse.site.PropertiesFileProducer.allProperties;
+import static xyz.enhorse.site.PropertiesFileProducer.smtpProperties;
 import static xyz.enhorse.site.ServiceProperties.*;
 
 /**
@@ -72,14 +73,25 @@ public class ConfigurationTest {
 
 
     @Test
-    public void serviceHandler_withIllegalServiceHandler_empty() throws Exception {
+    public void serviceHandler_withServiceHandler_empty() throws Exception {
         File file = allProperties()
                 .addProperty(HANDLER, "")
                 .saveTo(temp.newFile());
+        Configuration configuration = loadFromFile(file.getAbsolutePath());
 
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("less");
-        assertNull(loadFromFile(file.getAbsolutePath()));
+        assertEquals("/", configuration.serviceHandler());
+    }
+
+
+    @Test
+    public void serviceHandler_withServiceHandler_withoutStartPrefix() throws Exception {
+        String expected = "handler";
+        File file = allProperties()
+                .addProperty(HANDLER, expected)
+                .saveTo(temp.newFile());
+        Configuration configuration = loadFromFile(file.getAbsolutePath());
+
+        assertEquals("/" + expected, configuration.serviceHandler());
     }
 
 
@@ -108,7 +120,7 @@ public class ConfigurationTest {
 
 
     @Test
-    public void load_withIllegalPort_GreaterThenLegal() throws Exception {
+    public void load_withIllegalPort_greaterThenLegal() throws Exception {
         File file = allProperties()
                 .addProperty(PORT, "7000000")
                 .saveTo(temp.newFile());
@@ -126,7 +138,7 @@ public class ConfigurationTest {
                 .saveTo(temp.newFile());
 
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("greater");
+        exception.expectMessage("number");
         assertNull(loadFromFile(file.getAbsolutePath()));
     }
 
@@ -138,7 +150,7 @@ public class ConfigurationTest {
                 .saveTo(temp.newFile());
 
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("greater");
+        exception.expectMessage("number");
         assertNull(loadFromFile(file.getAbsolutePath()));
     }
 
@@ -259,6 +271,17 @@ public class ConfigurationTest {
 
 
     @Test
+    public void serviceDebug_isFalse_whenLoad_withServiceDebug_isSomeString() throws Exception {
+        File file = allProperties()
+                .addProperty(DEBUG_SERVICE, "string")
+                .saveTo(temp.newFile());
+        Configuration configuration = loadFromFile(file.getAbsolutePath());
+
+        assertFalse(configuration.logger().isDebugEnabled());
+    }
+
+
+    @Test
     public void jettyDebug_isFalse_whenLoad_withoutJettyDebug() throws Exception {
         File file = allProperties()
                 .removeProperty(DEBUG_JETTY)
@@ -284,6 +307,17 @@ public class ConfigurationTest {
     public void jettyDebug_IsFalse_whenLoad_withJettyDebug_isFalse() throws Exception {
         File file = allProperties()
                 .addProperty(DEBUG_JETTY, "false")
+                .saveTo(temp.newFile());
+        assertNotNull(loadFromFile(file.getAbsolutePath()));
+
+        assertFalse(Logger.getRootLogger().isDebugEnabled());
+    }
+
+
+    @Test
+    public void jettyDebug_IsFalse_whenLoad_withJettyDebug_isSomeString() throws Exception {
+        File file = allProperties()
+                .addProperty(DEBUG_JETTY, "string")
                 .saveTo(temp.newFile());
         assertNotNull(loadFromFile(file.getAbsolutePath()));
 

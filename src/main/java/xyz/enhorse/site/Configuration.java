@@ -24,6 +24,7 @@ public class Configuration {
 
     private static final int PRIVATE_PORTS_MINIMAL = 49152;
     private static final int PRIVATE_PORTS_MAXIMAL = 65535;
+    private static final String CONTEXT_PATH_PREFIX = "/";
 
     private final Properties parameters;
     private final SMTPServer smtpServer;
@@ -114,14 +115,26 @@ public class Configuration {
 
     private String readHandler() {
         String property = HANDLER.property();
-        return Validate.required(property, parameters.getProperty(property));
+        String handler = Validate.required(property, parameters.getProperty(property));
+
+        if (!handler.startsWith(CONTEXT_PATH_PREFIX)) {
+            handler = CONTEXT_PATH_PREFIX + handler;
+        }
+
+        return handler;
     }
 
 
     private int readPort() {
         String property = PORT.property();
-        int port = Integer.parseInt(Validate.required(property, parameters.getProperty(property)));
-        return Validate.isBetweenOrEquals("service port", port, PRIVATE_PORTS_MINIMAL, PRIVATE_PORTS_MAXIMAL);
+        int port;
+        try {
+            port = Integer.parseInt(Validate.required(property, parameters.getProperty(property)));
+            return Validate.isBetweenOrEquals(PORT.property(), port, PRIVATE_PORTS_MINIMAL, PRIVATE_PORTS_MAXIMAL);
+        } catch (NumberFormatException ex) {
+            throw new IllegalArgumentException(String.format("%s must be an integer number in range from %d to %d",
+                    PORT.property(), PRIVATE_PORTS_MINIMAL, PRIVATE_PORTS_MAXIMAL));
+        }
     }
 
 
