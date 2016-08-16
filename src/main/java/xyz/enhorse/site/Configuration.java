@@ -103,13 +103,9 @@ public class Configuration {
 
 
     private void checkRequirements() {
-        try {
-            readHandler();
-            readPort();
-            readEmailTo();
-        } catch (IllegalStateException ex) {
-            throw new IllegalArgumentException("Can't load configuration because the property " + ex.getMessage(), ex);
-        }
+        readHandler();
+        readPort();
+        readEmailTo();
     }
 
 
@@ -132,15 +128,20 @@ public class Configuration {
             port = Integer.parseInt(Validate.required(property, parameters.getProperty(property)));
             return Validate.isBetweenOrEquals(PORT.property(), port, PRIVATE_PORTS_MINIMAL, PRIVATE_PORTS_MAXIMAL);
         } catch (NumberFormatException ex) {
-            throw new IllegalArgumentException(String.format("%s must be an integer number in range from %d to %d",
-                    PORT.property(), PRIVATE_PORTS_MINIMAL, PRIVATE_PORTS_MAXIMAL));
+            throw new IllegalArgumentException(String.format(
+                    "the value of \"%s\" must be an integer number in range from %d to %d",
+                    property, PRIVATE_PORTS_MINIMAL, PRIVATE_PORTS_MAXIMAL));
         }
     }
 
 
     private Email readEmailTo() {
         String property = EMAIL_TO.property();
-        return Email.parse(Validate.required(property, parameters.getProperty(property)).trim());
+        try {
+            return Email.parse(Validate.required(property, parameters.getProperty(property)).trim());
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException(String.format("the value of \"%s\" must be a valid email address", property));
+        }
     }
 
 
@@ -158,11 +159,20 @@ public class Configuration {
         String email = parameters.getProperty(property);
 
         if (email == null) {
-            LOGGER.debug(String.format("\'%s\' property isn't defined - will be using the value of \'%s\'",
+            LOGGER.debug(String.format(
+                    "the value of \'%s\' isn't defined - will be using the value of \'%s\'",
                     property, EMAIL_TO.property()));
-            return readEmailTo();
+        } else {
+            try {
+                return Email.parse(email.trim());
+            } catch (IllegalArgumentException ex) {
+                LOGGER.warn(String.format(
+                        "the value of \'%s\' isn't a correct email address - will be using the value of \'%s\'",
+                        property, EMAIL_TO.property()));
+            }
         }
-        return Email.parse(email.trim());
+
+        return readEmailTo();
     }
 
 
@@ -179,7 +189,7 @@ public class Configuration {
     public static Configuration loadFromFile(final String filename) {
         PathEx file = new PathEx(Validate.notNull("configuration file filename", filename));
         if (!file.isExistingFile()) {
-            throw new IllegalArgumentException("Configuration file \'" + filename + "\' doesn't exist.");
+            throw new IllegalArgumentException("The configuration file \'" + filename + "\' doesn't exist.");
         }
 
         Properties properties = new Properties();

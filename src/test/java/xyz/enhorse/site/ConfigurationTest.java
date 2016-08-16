@@ -29,6 +29,13 @@ public class ConfigurationTest {
 
 
     @Test
+    public void load_absentFile() throws Exception {
+        exception.expect(IllegalArgumentException.class);
+        assertNull(loadFromFile("file"));
+    }
+
+
+    @Test
     public void load_full() throws Exception {
         File file = temp.newFile();
 
@@ -54,7 +61,7 @@ public class ConfigurationTest {
                 .removeProperty(HANDLER)
                 .saveTo(temp.newFile());
 
-        exception.expect(IllegalArgumentException.class);
+        exception.expect(IllegalStateException.class);
         exception.expectMessage(HANDLER.property());
         assertNull(loadFromFile(file.getAbsolutePath()));
     }
@@ -101,7 +108,7 @@ public class ConfigurationTest {
                 .removeProperty(PORT)
                 .saveTo(temp.newFile());
 
-        exception.expect(IllegalArgumentException.class);
+        exception.expect(IllegalStateException.class);
         exception.expectMessage(PORT.property());
         assertNull(loadFromFile(file.getAbsolutePath()));
     }
@@ -173,10 +180,35 @@ public class ConfigurationTest {
                 .removeProperty(EMAIL_TO)
                 .saveTo(temp.newFile());
 
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage(EMAIL_TO.property());
+        assertNull(loadFromFile(file.getAbsolutePath()));
+    }
+
+
+    @Test
+    public void load_withIllegalEmailTo_empty() throws Exception {
+        File file = allProperties()
+                .addProperty(EMAIL_TO, "")
+                .saveTo(temp.newFile());
+
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage(EMAIL_TO.property());
         assertNull(loadFromFile(file.getAbsolutePath()));
     }
+
+
+    @Test
+    public void load_withIllegalEmailTo_invalidEmail() throws Exception {
+        File file = allProperties()
+                .addProperty(EMAIL_TO, "mail")
+                .saveTo(temp.newFile());
+
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(EMAIL_TO.property());
+        assertNull(loadFromFile(file.getAbsolutePath()));
+    }
+
 
 
     @Test
@@ -203,6 +235,28 @@ public class ConfigurationTest {
 
 
     @Test
+    public void emailFrom_equals_emailTo_whenLoad_withIncorrectEmail_empty() throws Exception {
+        File file = allProperties()
+                .addProperty(EMAIL_FROM, "")
+                .saveTo(temp.newFile());
+        Configuration configuration = loadFromFile(file.getAbsolutePath());
+
+        assertEquals(configuration.emailTo(), configuration.emailFrom());
+    }
+
+
+    @Test
+    public void emailFrom_equals_emailTo_whenLoad_withIncorrectEmail_invalidEmail() throws Exception {
+        File file = allProperties()
+                .addProperty(EMAIL_FROM, "mail")
+                .saveTo(temp.newFile());
+        Configuration configuration = loadFromFile(file.getAbsolutePath());
+
+        assertEquals(configuration.emailTo(), configuration.emailFrom());
+    }
+
+
+    @Test
     public void emailFrom_equalsEmailFrom() throws Exception {
         String expected = "super@super.com";
         File file = allProperties()
@@ -218,6 +272,28 @@ public class ConfigurationTest {
     public void emailAdmin_equals_emailTo_whenLoad_withoutEmailAdmin() throws Exception {
         File file = allProperties()
                 .removeProperty(EMAIL_ADMIN)
+                .saveTo(temp.newFile());
+        Configuration configuration = loadFromFile(file.getAbsolutePath());
+
+        assertEquals(configuration.emailTo(), configuration.emailAdmin());
+    }
+
+
+    @Test
+    public void emailAdmin_equals_emailTo_whenLoad_withIncorrectEmail_empty() throws Exception {
+        File file = allProperties()
+                .addProperty(EMAIL_ADMIN, "")
+                .saveTo(temp.newFile());
+        Configuration configuration = loadFromFile(file.getAbsolutePath());
+
+        assertEquals(configuration.emailTo(), configuration.emailAdmin());
+    }
+
+
+    @Test
+    public void emailAdmin_equals_emailTo_whenLoad_withIncorrectEmail_invalidEmail() throws Exception {
+        File file = allProperties()
+                .addProperty(EMAIL_ADMIN, "mail")
                 .saveTo(temp.newFile());
         Configuration configuration = loadFromFile(file.getAbsolutePath());
 

@@ -16,7 +16,15 @@ public class Application {
             System.exit(0);
         }
 
-        Configuration configuration = Configuration.loadFromFile(args[0]);
+        Configuration configuration = null;
+        try {
+            configuration = Configuration.loadFromFile(args[0]);
+        } catch (Exception ex) {
+            System.out.println(String.format("Can't load configuration from the file \'%s\': %s",
+                    args[0], ex.getMessage()));
+            System.exit(-1);
+        }
+
 
         MailController mailController = new MailController(configuration);
 
