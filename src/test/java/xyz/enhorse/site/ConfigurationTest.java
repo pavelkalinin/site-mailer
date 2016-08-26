@@ -1,5 +1,6 @@
 package xyz.enhorse.site;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -22,6 +23,7 @@ import static xyz.enhorse.site.ServiceProperties.*;
  */
 public class ConfigurationTest {
 
+    private static Level LEVEL;
     private static TemporaryFolder temp;
 
     @Rule
@@ -418,12 +420,15 @@ public class ConfigurationTest {
     public static void setUp() throws Exception {
         temp = new TemporaryFolder();
         temp.create();
+        LEVEL = Logger.getLogger(Configuration.class).getLevel();
+        Logger.getLogger(Configuration.class).setLevel(Level.FATAL);
     }
 
 
     @AfterClass
     public static void tearDown() throws Exception {
         temp.delete();
+        Logger.getLogger(Configuration.class).setLevel(LEVEL);
     }
 
 }

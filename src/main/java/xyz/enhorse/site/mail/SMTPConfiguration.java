@@ -84,7 +84,7 @@ public class SMTPConfiguration {
 
     private String readHost() {
         String property = HOST.property();
-        return Validate.required(property, parameters.getProperty(property));
+        return Validate.urlSafe(property, Validate.required(property, parameters.getProperty(property)));
     }
 
 

@@ -4,11 +4,7 @@ import xyz.enhorse.commons.Validate;
 import xyz.enhorse.site.mail.SMTPProperties;
 import xyz.enhorse.site.mail.SMTPProtocols;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.util.Map;
 import java.util.Properties;
 
@@ -31,7 +27,7 @@ public class PropertiesFileProducer {
     }
 
 
-    private Properties properties() {
+    public Properties properties() {
         return appendProperties(new Properties(), current);
     }
 

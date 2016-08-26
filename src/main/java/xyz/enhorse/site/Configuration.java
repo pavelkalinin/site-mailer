@@ -96,13 +96,9 @@ public class Configuration {
 
 
     private void setup() {
-        LOGGER.setLevel(readDebugService() ? Level.DEBUG : Level.INFO);
         Logger.getRootLogger().setLevel(readDebugJetty() ? Level.DEBUG : Level.WARN);
-        checkRequirements();
-    }
+        LOGGER.setLevel(readDebugService() ? Level.DEBUG : Level.INFO);
 
-
-    private void checkRequirements() {
         readHandler();
         readPort();
         readEmailTo();
@@ -126,7 +122,7 @@ public class Configuration {
         int port;
         try {
             port = Integer.parseInt(Validate.required(property, parameters.getProperty(property)));
-            return Validate.isBetweenOrEquals(PORT.property(), port, PRIVATE_PORTS_MINIMAL, PRIVATE_PORTS_MAXIMAL);
+            return Validate.inRangeInclusive(PORT.property(), port, PRIVATE_PORTS_MINIMAL, PRIVATE_PORTS_MAXIMAL);
         } catch (NumberFormatException ex) {
             throw new IllegalArgumentException(String.format(
                     "the value of \"%s\" must be an integer number in range from %d to %d",
