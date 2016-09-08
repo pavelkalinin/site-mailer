@@ -1,5 +1,6 @@
 package xyz.enhorse.site.mail;
 
+import xyz.enhorse.commons.parameters.schemas.Description;
 import xyz.enhorse.site.ConfigurationProperties;
 
 /**
@@ -79,6 +80,12 @@ public enum SMTPProperties implements ConfigurationProperties {
 
     public String property() {
         return value;
+    }
+
+
+    @Override
+    public Description<?> description() {
+        return null;
     }
 
 

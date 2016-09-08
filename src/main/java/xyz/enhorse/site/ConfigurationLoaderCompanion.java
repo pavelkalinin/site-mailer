@@ -1,18 +1,14 @@
 package xyz.enhorse.site;
 
 import xyz.enhorse.commons.Check;
-import xyz.enhorse.commons.parameters.LoaderCompanion;
+import xyz.enhorse.commons.parameters.loaders.Companion;
 
 /**
  * @author <a href="mailto:pavel13kalinin@gmail.com">Pavel Kalinin</a>
  *         26.08.2016
  */
-public class ConfigurationLoaderCompanion implements LoaderCompanion {
-
-    private ConfigurationLoaderCompanion() {
-
-    }
-    
+public enum ConfigurationLoaderCompanion implements Companion {
+    INSTANCE;
 
     @Override
     public String preProcessKey(final String key) {
@@ -45,27 +41,5 @@ public class ConfigurationLoaderCompanion implements LoaderCompanion {
         }
 
         return result;
-    }
-
-
-    public static ConfigurationLoaderCompanion instance() {
-        return SingletonHolder.instance();
-    }
-
-
-    private static class SingletonHolder {
-
-
-        public static ConfigurationLoaderCompanion instance = null;
-
-
-        public static ConfigurationLoaderCompanion instance() {
-            if (instance == null) {
-                instance = new ConfigurationLoaderCompanion();
-            }
-            return instance;
-        }
-
-
     }
 }

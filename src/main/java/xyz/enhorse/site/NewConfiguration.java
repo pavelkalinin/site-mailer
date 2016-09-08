@@ -1,13 +1,12 @@
 package xyz.enhorse.site;
 
 import org.apache.log4j.Logger;
-import xyz.enhorse.commons.parameters.ConcurrentParameters;
 import xyz.enhorse.commons.parameters.Parameters;
-import xyz.enhorse.commons.parameters.ParametersLoader;
-import xyz.enhorse.commons.parameters.TextFileLoader;
+import xyz.enhorse.commons.parameters.loaders.Loader;
+import xyz.enhorse.commons.parameters.loaders.TextFileLoader;
+import xyz.enhorse.commons.parameters.schemas.Schema;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:pavel13kalinin@gmail.com">Pavel Kalinin</a>
@@ -17,8 +16,6 @@ public class NewConfiguration {
 
     private static final Logger LOGGER = Logger.getLogger(Configuration.class);
 
-    private static final int PRIVATE_PORTS_MINIMAL = 49152;
-    private static final int PRIVATE_PORTS_MAXIMAL = 65535;
     private static final String CONTEXT_PATH_PREFIX = "/";
 
     private final Parameters parameters;
@@ -30,17 +27,26 @@ public class NewConfiguration {
     }
 
 
+    @Override
+    public String toString() {
+        return parameters.toString();
+    }
+
+
     public static NewConfiguration loadFromFile(final String filename) {
-        Parameters parameters = new ConcurrentParameters();
+
         try {
-            ParametersLoader loader = new TextFileLoader(filename, StandardCharsets.UTF_8);
-            for (Map.Entry<String, String> parameter : loader.load(ConfigurationLoaderCompanion.instance()).entrySet()) {
-                parameters.put(parameter.getKey(), parameter.getValue());
-            }
+            Schema schema = ServiceProperties.schema();
+            Loader loader = new TextFileLoader(filename, StandardCharsets.UTF_8);
+
+            return new NewConfiguration(schema.process(loader.load(ConfigurationLoaderCompanion.INSTANCE)));
         } catch (IllegalStateException ex) {
             throw new IllegalStateException("Error loading the configuration file \'" + filename + "\'.");
         }
+    }
 
-        return new NewConfiguration(parameters);
+
+    public static void main(String[] args) {
+        System.out.println(NewConfiguration.loadFromFile("/Volumes/USR/Projects/site-mailer/src/test/resources/test.access.properties"));
     }
 }
