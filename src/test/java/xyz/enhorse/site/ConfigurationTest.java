@@ -409,7 +409,7 @@ public class ConfigurationTest {
 
         String string = loadFromFile(allProperties().saveTo(file).getAbsolutePath()).toString();
 
-        for (ConfigurationProperties property : ServiceProperties.values()) {
+        for (ServiceProperties property : ServiceProperties.values()) {
             assertEquals(String.format("toString%n%s%n" + "should contains \'%s\'", string, property.property()),
                     true, string.contains(property.property()));
         }

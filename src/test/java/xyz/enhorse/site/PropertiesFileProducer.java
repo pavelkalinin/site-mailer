@@ -32,7 +32,7 @@ public class PropertiesFileProducer {
     }
 
 
-    public PropertiesFileProducer addProperty(final ConfigurationProperties property, final String value) {
+    public PropertiesFileProducer addProperty(final ServiceProperties property, final String value) {
         final String name = Validate.required("property", property.property());
 
         if (current.getProperty(name) != null) {
@@ -44,7 +44,7 @@ public class PropertiesFileProducer {
     }
 
 
-    public PropertiesFileProducer removeProperty(final ConfigurationProperties property) {
+    public PropertiesFileProducer removeProperty(final ServiceProperties property) {
         final String name = Validate.required("property", property.property());
 
         if (current.getProperty(name) != null) {

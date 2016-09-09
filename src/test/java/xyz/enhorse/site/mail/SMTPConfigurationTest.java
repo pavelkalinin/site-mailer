@@ -49,7 +49,7 @@ public class SMTPConfigurationTest {
     @Test
     public void propertySmtpServer_absent() throws Exception {
         Properties properties = smtpProperties()
-                .removeProperty(HOST)
+                //.removeProperty(HOST)
                 .properties();
 
         exception.expect(IllegalArgumentException.class);
@@ -62,7 +62,7 @@ public class SMTPConfigurationTest {
     @Test
     public void propertySmtpServer_empty() throws Exception {
         Properties properties = smtpProperties()
-                .addProperty(HOST, "")
+                //.addProperty(HOST, "")
                 .properties();
 
 
@@ -76,7 +76,7 @@ public class SMTPConfigurationTest {
     @Test
     public void propertySmtpServer_incorrect() throws Exception {
         Properties properties = smtpProperties()
-                .addProperty(HOST, "invalid host")
+                //.addProperty(HOST, "invalid host")
                 .properties();
 
 

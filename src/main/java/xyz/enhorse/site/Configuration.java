@@ -5,7 +5,6 @@ import org.apache.log4j.Logger;
 import xyz.enhorse.commons.Email;
 import xyz.enhorse.commons.PathEx;
 import xyz.enhorse.commons.Validate;
-import xyz.enhorse.site.mail.SMTPConfiguration;
 import xyz.enhorse.site.mail.SMTPServer;
 
 import java.io.FileInputStream;
@@ -33,7 +32,7 @@ public class Configuration {
     private Configuration(final Properties properties) {
         parameters = Validate.notNull("parameters", properties);
         setup();
-        smtpServer = new SMTPServer(new SMTPConfiguration(parameters));
+        smtpServer = null; //new SMTPServer(new SMTPConfiguration(parameters));
         LOGGER.info(String.format("Configuration %s has been successfully loaded", toString()));
     }
 
